@@ -1,0 +1,19 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - src/app/
+
+    level: 9
+
+    ignoreErrors:
+
+    excludePaths:
+      - src/app/Http/Controllers/Auth/
+      - src/app/Http/Middleware/
+      - src/app/Http/Requests/Auth
+      - src/app/Providers/AuthServiceProvider.php
+
+    checkMissingIterableValueType: false

@@ -1,0 +1,1074 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Mrprototcol",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "https://mrprotocol.com/api/v1",
+            "description": "Base URL"
+        },
+        {
+            "url": "http://127.0.0.1:8000/api/v1",
+            "description": "Local Base URL"
+        }
+    ],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User login",
+                "description": "Logs in a user and returns an access token",
+                "operationId": "loginUser",
+                "requestBody": {
+                    "description": "User credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "type": "string",
+                                            "example": "200"
+                                        },
+                                        "access-token": {
+                                            "type": "string",
+                                            "example": "Bearer {access_token}"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/401"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User logout",
+                "description": "Logs out the authenticated user and revokes the access token.",
+                "operationId": "logout",
+                "responses": {
+                    "204": {
+                        "description": "Logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "type": "string",
+                                            "example": "204"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/401"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/email/verification-link": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Send email verification notification",
+                "operationId": "308c10b0198988dee06bc4633c26b6a8",
+                "requestBody": {
+                    "description": "Request body containing user email",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "User's email address",
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful email sending",
+                                            "type": "string",
+                                            "example": "Verification email sent successfully"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating that the email is already verified",
+                                            "type": "string",
+                                            "example": "Email already verified"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/500"
+                    }
+                }
+            }
+        },
+        "/auth/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user password after email verification",
+                "description": "Change user password after email verification.",
+                "operationId": "b773aaaeaa6d02a1785bb47b8d05fb91",
+                "requestBody": {
+                    "description": "Request body containing the verification token and new password",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "Verification token received in the email",
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "description": "New password",
+                                        "type": "string"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmation of the new password",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful password change",
+                                            "type": "string",
+                                            "example": "Password changed successfully"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating expired verification token",
+                                            "type": "string",
+                                            "example": "Verification token has expired"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating invalid verification token",
+                                            "type": "string",
+                                            "example": "Invalid verification token"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 404
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/oauth/google": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get Google authentication URL",
+                "description": "Get the Google authentication URL.",
+                "operationId": "4cad9f454e139c80557c4b33bc85aeff",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful login",
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "string",
+                                            "example": "200"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "url": {
+                                                    "description": "URL for Google authentication",
+                                                    "type": "string",
+                                                    "format": "url"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log in with Google authentication",
+                "description": "Log in with Google authentication.",
+                "operationId": "9f4603884c7ea31616b823f550b12f04",
+                "requestBody": {
+                    "description": "Request body containing authentication code",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "authCode"
+                                ],
+                                "properties": {
+                                    "authCode": {
+                                        "description": "Authentication code received from Google",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful login",
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "string",
+                                            "example": "200"
+                                        },
+                                        "accessToken": {
+                                            "description": "Access token for the user",
+                                            "type": "string",
+                                            "format": "text"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Send password reset link",
+                "description": "Send password reset link.",
+                "operationId": "febbd99ec02533a62072c943c8864557",
+                "requestBody": {
+                    "description": "Request body containing user email",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "User's email address",
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful password reset link sending",
+                                            "type": "string",
+                                            "example": "Password reset link sent successfully"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/422"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/500"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "description": "Registers a new user with the provided information.",
+                "operationId": "f024dbf1273b8a27c30d428e9c1fb20d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "User's name",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "User's email",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "description": "User's password",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registration successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registration successful"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "type": "string",
+                                            "example": "201"
+                                        },
+                                        "access-token": {
+                                            "type": "string",
+                                            "example": "your_access_token"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/422"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/500"
+                    }
+                }
+            }
+        },
+        "/auth/email/verify": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify user email",
+                "operationId": "c6dcfe1647a381d8cee802ca0d744027",
+                "requestBody": {
+                    "description": "Request body containing the verification token",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "Verification token",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating successful user verification",
+                                            "type": "string",
+                                            "example": "User verified successfully"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating failure to verify email",
+                                            "type": "string",
+                                            "example": "Failed to verify email"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message indicating invalid verification token",
+                                            "type": "string",
+                                            "example": "Invalid verification token"
+                                        },
+                                        "status": {
+                                            "description": "Status of the response",
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "statusCode": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 404
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user profile",
+                "description": "Updates the user's name and job title in the profile",
+                "operationId": "updateUserProfile",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profile updated successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "example": 204
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/401"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/422"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/500"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/user/change-password": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Change User Password",
+                "description": "Change the user's password.",
+                "operationId": "changePassword",
+                "requestBody": {
+                    "description": "Password change request data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "current_password": {
+                                        "description": "Current password",
+                                        "type": "string",
+                                        "example": "old_password"
+                                    },
+                                    "new_password": {
+                                        "description": "New password",
+                                        "type": "string",
+                                        "example": "new_password"
+                                    },
+                                    "new_password_confirmation": {
+                                        "description": "Confirm new password",
+                                        "type": "string",
+                                        "example": "new_password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password changed successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/401"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/422"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/500"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "RegisterRequest": {
+                "title": "User Registration Request",
+                "description": "Schema for the user registration request",
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "John"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    }
+                },
+                "type": "object"
+            },
+            "UserUpdateRequest": {
+                "title": "Profile Update Request",
+                "description": "Request data for updating user profile.",
+                "required": [
+                    "name",
+                    "job_title"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "User's first name",
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "job_title": {
+                        "description": "User's job title",
+                        "type": "string",
+                        "example": "Doe"
+                    }
+                },
+                "type": "object"
+            },
+            "UserResource": {
+                "title": "User Resource",
+                "description": "User resource representation",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "user"
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "responses": {
+            "500": {
+                "description": "Server Error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Oops something went wrong"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "statusCode": {
+                                    "type": "integer",
+                                    "example": 500
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "403": {
+                "description": "Unauthorized: Permission denied",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Unauthorized: User Unauthorized"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "statusCode": {
+                                    "type": "integer",
+                                    "example": 403
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "401": {
+                "description": "Forbidden: Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Unauthenticated"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "statusCode": {
+                                    "type": "integer",
+                                    "example": 401
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "Resource Not Found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Resource Not Found"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "statusCode": {
+                                    "type": "integer",
+                                    "example": 404
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "422": {
+                "description": "Validation Error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Validation error"
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "example": {
+                                        "field_name": [
+                                            "The field_name field is required."
+                                        ]
+                                    }
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "statusCode": {
+                                    "type": "integer",
+                                    "example": 422
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "name": "bearerAuth",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        }
+    ]
+}
