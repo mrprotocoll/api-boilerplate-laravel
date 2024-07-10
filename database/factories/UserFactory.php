@@ -5,12 +5,16 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Modules\V1\User\Enums\RoleEnum;
+use Modules\V1\User\Models\User;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Shared\Models\User>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Modules\V1\User\Models\User>
  */
 class UserFactory extends Factory
 {
+    protected $model = User::class;
+
     /**
      * The current password being used by the factory.
      */
@@ -26,6 +30,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'role_id' => RoleEnum::USER->value,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

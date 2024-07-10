@@ -74,7 +74,6 @@ final class FileService
     public static function upload(UploadedFile $file, string $folderName = ''): false|array
     {
         try {
-            //            $name = $file->hashName();
             $name = $file->getClientOriginalName();
             $fileName = "{$folderName}/" . self::formatName($name);
             $disk = 'public';

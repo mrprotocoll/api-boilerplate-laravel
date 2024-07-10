@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\V1\Auth\Services;
 
 use Illuminate\Support\Facades\Hash;
-use Modules\V1\User\Models\User;
 use Shared\Enums\RoleEnum;
+use Modules\V1\User\Models\User;
 
 final class AuthenticationService
 {

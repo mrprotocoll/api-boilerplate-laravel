@@ -7,8 +7,8 @@ namespace Modules\V1\Auth\Controllers;
 use App\Http\Controllers\V1\Controller;
 use Illuminate\Support\Facades\Hash;
 use Modules\V1\Auth\Requests\RegisterRequest;
+use Modules\V1\User\Enums\RoleEnum;
 use Modules\V1\User\Models\User;
-use Shared\Enums\RoleEnum;
 use Shared\Helpers\ResponseHelper;
 
 final class RegisteredUserController extends Controller

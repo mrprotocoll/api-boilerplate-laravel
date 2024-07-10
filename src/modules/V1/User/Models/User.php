@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\V1\User\Models;
 
 use Carbon\Carbon;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -129,5 +130,10 @@ final class User extends Authenticatable implements MustVerifyEmail
         $this->verification_token_expiry = null;
 
         return $this->save();
+    }
+
+    protected static function newFactory()
+    {
+        return UserFactory::new();
     }
 }

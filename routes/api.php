@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return json_encode('Welcome to My API');
+    return response()->json(['message' => 'Welcome to My API']);
 });
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Enums;
+namespace Modules\V1\User\Enums;
 
 use Shared\Helpers\StringHelper;
 

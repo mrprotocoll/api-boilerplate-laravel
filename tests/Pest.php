@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 /*
@@ -42,7 +45,11 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function something(): void
 {
     // ..
 }
+
+beforeEach(function (): void {
+    Artisan::call('db:seed', ['--class' => 'Database\Seeders\RoleSeeder']);
+});
