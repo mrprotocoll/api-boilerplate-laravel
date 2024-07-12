@@ -1,66 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+  <h2><b>🕹️🕹️ Laravel API Boilerplate🕹️🕹️</b></h2>
+  <br/>
+</div>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<a name="readme-top"></a>
 
-## About Laravel
+<!-- TABLE OF CONTENTS -->
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# 📗 Table of Contents
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [📖 About the Project](#about-project)
+    - [🛠 Built With](#built-with)
+        - [Tech Stack](#tech-stack)
+    - [🚀 Links](#api-docs)
+    - [Features](#features)
+- [💻 Getting Started](#getting-started)
+    - [Setup](#setup)
+    - [Prerequisites](#prerequisites)
+    - [Usage](#usage)
+- [🤝 Contributing](#contributing)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+<!-- PROJECT DESCRIPTION -->
 
-## Learning Laravel
+# 📖  API Boilerplate <a name="about-project"></a>
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**[Idara API]** is a boilerplate for building API applications using Laravel 11, incorporating Domain-Driven Design (DDD), role-based authentication, and various other features.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Tech Stack <a name="tech-stack"></a>
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- <a href="https://www.php.net/">PHP</a>
+- <a href="https://laravel.com/">Laravel</a>
 
-## Laravel Sponsors
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+<!-- Link to Api Documentation -->
 
-### Premium Partners
+## 🚀 Links <a name="api-docs"></a>
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+To access the documentation goto the below link
 
-## Contributing
+- Link to api routes
+```
+http://localhost:8000/v1
+```
+- Link to documentation
+```
+http://localhost:8000/v1/documentation
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+<br/>
 
-## Code of Conduct
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+<!-- GETTING STARTED -->
 
-## Security Vulnerabilities
+## 💻 Getting Started <a name="getting-started"></a>
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+To get a local copy up and running, follow these steps.
 
-## License
+### Prerequisites
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+In order to run this boilerplate, you need:
+
+1. PHP ^8.2 <br>
+   use the following link to setup `PHP` if you dont have it already installed on your computer
+<p align="left">(<a href="https://www.php.net/manual/en/install.php">install PHP</a>)</p>
+
+2. Composer <br>
+   use the following link to Download `Composer` if you dont have it already installed on your computer
+<p align="left">(<a href="https://getcomposer.org/download/">install Composer</a>)</p>
+
+## Install
+
+```
+composer create-project mrprotocoll/laravel-api-boilerplate my-api
+```
+
+Install dependencies:
+
+```
+composer install
+```
+
+## Setup
+
+
+create .env file, change using the .env.example file and update the Database, Google Oauth (optional), and Email credentials.
+```
+cp .env.example .env
+```
+
+Generate keys, Run the migration and seed roles:
+
+```
+php artisan key:generate 
+php artisan migrate --seed
+```
+
+### Usage
+
+The following command can be used to run the application.
+
+```sh
+  php artisan serve
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>

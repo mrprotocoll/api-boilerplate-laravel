@@ -1,8 +1,8 @@
 {
-    "name": "laravel/laravel",
+    "name": "mrprotocoll/api-boilerplate-laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "This Laravel 11 API boilerplate provides a structured foundation for building robust backend applications with Laravel, integrating essential features and tools.",
+    "keywords": ["laravel", "boilerplate", "framework"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -52,9 +52,7 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi",
-            "@php artisan db:seed"
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\""
         ],
         "pint": [
             "./vendor/pint"
