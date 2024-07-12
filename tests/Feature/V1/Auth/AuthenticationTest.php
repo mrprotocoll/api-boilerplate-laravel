@@ -8,7 +8,6 @@ use Modules\V1\User\Models\User;
 
 beforeEach(function (): void {
     $this->seed(RoleSeeder::class);
-    User::factory()->create();
 });
 
 it('logs in successfully with valid credentials and verified email', function (): void {
@@ -38,7 +37,7 @@ it('logs in successfully with valid credentials and verified email', function ()
     ]);
 });
 
-test('users cannot authenticate with invalid credentials', function (): void {
+it('users cannot authenticate with invalid credentials', function (): void {
     $user = User::factory()->create();
 
     $response = $this->post('/v1/auth/login', [
@@ -54,7 +53,7 @@ test('users cannot authenticate with invalid credentials', function (): void {
     ]);
 });
 
-test('users cannot authenticate with unverified email', function (): void {
+it('users cannot authenticate with unverified email', function (): void {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -70,4 +69,21 @@ test('users cannot authenticate with unverified email', function (): void {
         'status' => 'error',
         'message' => 'Email not verified. Kindly verify your email',
     ]);
+});
+
+it('logs out successfully when authenticated', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('TestDevice')->plainTextToken;
+
+    $response = $this->postJson('/v1/auth/logout', [], ['Authorization' => "Bearer $token"]);
+
+    $response->assertStatus(204);
+
+    $this->assertCount(0, $user->tokens);
+});
+
+it('returns error when not authenticated', function () {
+    $response = $this->postJson('/v1/auth/logout');
+
+    $response->assertStatus(401);
 });

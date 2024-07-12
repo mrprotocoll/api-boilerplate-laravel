@@ -6,7 +6,7 @@ namespace App\Http\Controllers\V1;
 
 /**
  * @OA\Info(
- *     title="Mrprototcol",
+ *     title="Documentation",
  *     version="1.0"
  * ),
  * @OA\SecurityScheme(
@@ -19,11 +19,11 @@ namespace App\Http\Controllers\V1;
  * ),
  * @OA\Server(
  *     description="Base URL",
- *     url="https://mrprotocol.com/api/v1"
+ *     url="https://domain.dev/v1"
  * ),
  * @OA\Server(
  *     description="Local Base URL",
- *     url="http://127.0.0.1:8000/api/v1"
+ *     url="http://127.0.0.1:8000/v1"
  * ),
  * @OA\Response(
  *     response=500,

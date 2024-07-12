@@ -104,11 +104,49 @@ final class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): \Illuminate\Http\JsonResponse
     {
         if ( ! Auth::check()) {
-            return ResponseHelper::error('Unauthorized', 401);
+            return ResponseHelper::error('Unauthenticated', 401);
         }
 
         $request->user()->tokens()->delete();
 
         return ResponseHelper::success(message: 'logged out successfully', status: 204);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/auth/refresh-token",
+     *     summary="Refresh the authentication token",
+     *     description="Revokes the existing token and generates a new token for the authenticated user.",
+     *     tags={"Authentication"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Token refreshed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example="success"),
+     *             @OA\Property(property="message", type="string", example="Token refreshed"),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="accessToken", type="string", example="1|abc123..."),
+     *                 @OA\Property(property="expires_in", type="integer", example=60)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/401"),
+     * )
+     */
+    public function refreshToken(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = auth()->user();
+        $user->tokens()->delete(); // Revoke all existing tokens
+
+        $device = Str::limit($request->userAgent(), 255);
+        $token = $user->createToken($device)->plainTextToken;
+
+        return ResponseHelper::success(
+            message: 'Token refreshed',
+            meta: [
+                'accessToken' => $token,
+                'expires_in' => config('sanctum.expiration'),
+            ],
+        );
     }
 }
