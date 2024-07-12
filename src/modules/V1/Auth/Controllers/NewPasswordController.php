@@ -2,6 +2,9 @@
 
 namespace Modules\V1\Auth\Controllers;
 
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Log;
+use Modules\V1\Auth\Requests\ResetPasswordRequest;
 use Shared\Helpers\GlobalHelper;
 use Shared\Helpers\ResponseHelper;
 use App\Http\Controllers\V1\Controller;
@@ -121,31 +124,35 @@ class NewPasswordController extends Controller
      *     )
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(ResetPasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'token' => ['required', 'string'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        try {
+            $token = GlobalHelper::decrypt($request->token);
 
-        $token = GlobalHelper::decrypt($request->token);
+            // Find the user by the verification token
+            $user = User::where('verification_token', $token)->first();
 
-        // Find the user by the verification token
-        $user = User::where('verification_token', $token)->first();
+            if (!$user) {
+                return ResponseHelper::error('Invalid verification token', 404);
+            }
 
-        if (!$user) {
-            return ResponseHelper::error('Invalid verification token', 404);
+            // Check if the token has expired
+            if ($user->verification_token_expiry && (new Carbon($user->verification_token_expiry))->isPast()) {
+                return ResponseHelper::error('Verification token has expired', 400);
+            }
+
+            // Change user's password
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return ResponseHelper::success(message: 'Password changed successfully');
+
+        }catch (DecryptException $e) {
+            Log::error('Invalid decryption token: ' . $e->getMessage());
+            return ResponseHelper::error('Invalid verification token', 422); // or throw a custom exception
+        }catch (\Exception $e) {
+            Log::error($e);
+            return ResponseHelper::error();
         }
-
-        // Check if the token has expired
-        if ($user->verification_token_expiry && (new Carbon($user->verification_token_expiry))->isPast()) {
-            return ResponseHelper::error('Verification token has expired', 400);
-        }
-
-        // Change user's password
-        $user->password = Hash::make($request->password);
-        $user->save();
-
-        return ResponseHelper::success(message: 'Password changed successfully');
     }
 }

@@ -12,10 +12,14 @@
 //    $response->assertNoContent();
 //});
 
+use Database\Seeders\RoleSeeder;
 use Modules\V1\User\Enums\RoleEnum;
 use Modules\V1\User\Models\User;
 
 test('registers a new user', function () {
+
+    $this->seed(RoleSeeder::class);
+
     $userData = [
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -23,7 +27,7 @@ test('registers a new user', function () {
         'password_confirmation' => 'password',
     ];
 
-    $response = postJson('/api/auth/register', $userData);
+    $response = $this->postJson('/v1/auth/register', $userData);
 
     $response
         ->assertStatus(201)

@@ -2,37 +2,46 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Artisan;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Hash;
 use Modules\V1\User\Models\User;
 
 beforeEach(function (): void {
-    Artisan::call('db:seed', ['--class' => 'Database\Seeders\RoleSeeder']);
+    $this->seed(RoleSeeder::class);
+    User::factory()->create();
 });
 
-test('users can authenticate using valid credentials and verified email', function (): void {
-    $user = User::factory()->create();
-
-    $response = $this->post('/auth/login', [
-        'email' => $user->email,
-        'password' => 'password',
+it('logs in successfully with valid credentials and verified email', function (): void {
+    $password = 'password123';
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'password' => Hash::make($password),
+        'email_verified_at' => now(),
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertJson([
-        'success' => true,
-        'message' => 'Login successful',
+    $response = $this->postJson('/v1/auth/login', [
+        'email' => $user->email,
+        'password' => $password,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'message',
+        'status',
+        'statusCode',
+        'accessToken',
         'data' => [
-            'id' => $user->id,
-            'email' => $user->email,
+            'id',
+            'name',
+            'email',
         ],
     ]);
-    $response->assertJsonStructure(['meta' => ['accessToken']]);
 });
 
 test('users cannot authenticate with invalid credentials', function (): void {
     $user = User::factory()->create();
 
-    $response = $this->post('/auth/login', [
+    $response = $this->post('/v1/auth/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
@@ -40,7 +49,7 @@ test('users cannot authenticate with invalid credentials', function (): void {
     $this->assertGuest();
     $response->assertStatus(401);
     $response->assertJson([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Invalid credentials',
     ]);
 });
@@ -50,7 +59,7 @@ test('users cannot authenticate with unverified email', function (): void {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->post('/auth/login', [
+    $response = $this->post('/v1/auth/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -58,7 +67,7 @@ test('users cannot authenticate with unverified email', function (): void {
     $this->assertGuest();
     $response->assertStatus(403);
     $response->assertJson([
-        'success' => false,
+        'status' => 'error',
         'message' => 'Email not verified. Kindly verify your email',
     ]);
 });

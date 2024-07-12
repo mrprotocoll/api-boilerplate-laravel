@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,7 +19,7 @@ use Modules\V1\Auth\Notifications\ResetPassword;
 use Modules\V1\Auth\Notifications\VerifyEmailAddress;
 use Shared\Helpers\GlobalHelper;
 
-final class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, HasUuids, Notifiable;
 
@@ -72,8 +73,6 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Get the currently authenticated user.
-     *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
     public static function active(): ?\Illuminate\Contracts\Auth\Authenticatable
     {
@@ -83,8 +82,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     /**
      * Create a verification token with an optional expiry time.
      *
-     * @param int $hours The number of hours until the token expires (default is 24 hours).
-     *
+     * @param  int  $hours  The number of hours until the token expires (default is 24 hours).
      * @return string The encrypted verification token.
      */
     public function createVerificationToken(int $hours = 24): string
@@ -102,7 +100,6 @@ final class User extends Authenticatable implements MustVerifyEmail
 
         return GlobalHelper::encrypt($token);
     }
-
 
     public function sendEmailVerificationNotification(): void
     {
@@ -132,7 +129,7 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->save();
     }
 
-    protected static function newFactory()
+    protected static function newFactory(): UserFactory
     {
         return UserFactory::new();
     }

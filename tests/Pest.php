@@ -6,6 +6,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
+beforeEach(function (): void {
+    Artisan::call('db:seed', ['--class' => 'Database\Seeders\RoleSeeder']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -17,7 +21,9 @@ use Tests\TestCase;
 |
 */
 
+//uses(TestCase::class)->in('Feature');
 uses(TestCase::class, RefreshDatabase::class)->in('Feature');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +56,3 @@ function something(): void
     // ..
 }
 
-beforeEach(function (): void {
-    Artisan::call('db:seed', ['--class' => 'Database\Seeders\RoleSeeder']);
-});
