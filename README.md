@@ -24,7 +24,32 @@
 
 # 📖  API Boilerplate <a name="about-project"></a>
 
-**[Idara API]** is a boilerplate for building API applications using Laravel 11, incorporating Domain-Driven Design (DDD), role-based authentication, and various other features.
+A robust, modular Laravel 11 API boilerplate built using a Domain-Driven Design (DDD) approach. This boilerplate provides a scalable foundation for modern API development with essential features like role-based access, versioning, Google OAuth integration, and more..
+
+### Features
+
+- Domain-Driven Architecture: Organized modules and shared resources for scalability. 
+- Versioning: Supports multiple API versions with structured routing. 
+- Role-Based Access Control: Integrated roles and permissions with easy extensibility. 
+- Google OAuth: Simplified OAuth 2.0 authentication setup. 
+- Modular Components: Independent modules for Auth, User, and more. 
+- Enums and Helpers: Centralized, reusable enums and helper methods. 
+- Custom Middlewares: Pre-configured middlewares for JSON responses, caching, logging, and preventing duplicate requests. 
+- Optimized Exception Handling: Friendly and consistent error responses. 
+- Custom Base Model: A UUID-enabled base model for consistency across entities. 
+- Seeders and Factories: Simplified data seeding with predefined roles. 
+- Rate Limiting: API throttling to prevent abuse. 
+- Fully Documented: Swagger/OpenAPI support for API documentation.
+
+### Architecture Overview
+#### Domain-Driven Design (DDD)
+The project structure is organized to separate concerns:
+
+`src/modules`: Contains feature-specific modules, e.g., Auth and User.
+`src/shared`: Shared resources like helpers, enums, and base classes.
+
+#### Versioning
+Version-specific modules and routes are located in the `V1` directory for flexibility.
 
 ### Tech Stack <a name="tech-stack"></a>
 
@@ -71,9 +96,9 @@ In order to run this boilerplate, you need:
 <p align="left">(<a href="https://getcomposer.org/download/">install Composer</a>)</p>
 
 ## Install
-
+clone the repository:
 ```
-composer create-project mrprotocoll/laravel-api-boilerplate my-api
+git clone git@github.com:mrprotocoll/api-boilerplate-laravel.git
 ```
 
 Install dependencies:
@@ -106,3 +131,9 @@ The following command can be used to run the application.
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+Feel free to fork the repository, make changes, and submit pull requests. Feedback is always welcome!
+
+## License
+This project is licensed under the MIT License.
