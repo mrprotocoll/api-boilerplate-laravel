@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Larowka\PreventDuplicateRequests\Middleware\PreventDuplicateRequests;
 use Shared\Helpers\ResponseHelper;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
@@ -44,5 +45,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->renderable(function (TooManyRequestsHttpException $e) {
             return ResponseHelper::error(message: 'Duplicate requests', status: 429);
+        });
+
+        $exceptions->renderable(function (HttpException $e) {
+            if (401 === $e->getStatusCode()) {
+                return ResponseHelper::error('Unauthorized access', 401);
+            } elseif (403 === $e->getStatusCode()) {
+                return ResponseHelper::error('Access denied', 403);
+            }
         });
     })->create();

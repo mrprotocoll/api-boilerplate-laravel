@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Helpers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 final class ResponseHelper
 {
@@ -46,8 +47,10 @@ final class ResponseHelper
      *
      * @return JsonResponse
      */
-    public static function error(string $message = 'Oops something went wrong', int $status = 500): JsonResponse
+    public static function error(string $message = 'Oops something went wrong', int $status = 500, \Exception $exception = null): JsonResponse
     {
+        $exception && Log::error($exception);
+
         return response()->json([
             'status' => 'error',
             'statusCode' => $status,
