@@ -104,8 +104,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification(): void
     {
         $verificationToken = $this->createVerificationToken();
-        $frontEndLink = env('FRONTEND_URL') . env('VERIFY_EMAIL_URL');
-        $link = $frontEndLink . "?t={$verificationToken}";
+        $link = config('reset_password') . $token;
+
 
         $this->notify(new VerifyEmailAddress($this, $link));
     }
