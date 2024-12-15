@@ -101,21 +101,30 @@ class User extends Authenticatable implements MustVerifyEmail
         return GlobalHelper::encrypt($token);
     }
 
+    public function createEmailVerificationToken($hours = 24): string
+    {
+        // Generate a unique verification token
+        $token = substr(str_shuffle("0123456789"), 0, 5); // Adjust the length as needed
+
+        // Set token expiry time (e.g., 24 hours from now)
+        $expiry = \Illuminate\Support\Carbon::now()->addHours($hours);
+        $this->verification_token = $token;
+        $this->verification_token_expiry = $expiry;
+        $this->save();
+
+        return $token;
+    }
+
     public function sendEmailVerificationNotification(): void
     {
-        $verificationToken = $this->createVerificationToken();
-        $link = config('reset_password') . $token;
-
-
-        $this->notify(new VerifyEmailAddress($this, $link));
+        $verificationToken = $this->createEmailVerificationToken();
+        $this->notify(new VerifyEmailAddress($this, $verificationToken));
     }
 
     public function sendPasswordResetNotification($token = ''): void
     {
         $token = $this->createVerificationToken();
-        $frontEndLink = env('FRONTEND_URL') . env('RESET_PASS_URL');
-        $link = $frontEndLink . "?t={$token}";
-
+        $link = config('constants.reset_password') . $token;
         $this->notify(new ResetPassword($this, $link));
 
     }
