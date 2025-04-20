@@ -34,7 +34,7 @@ final class Role extends Model
      * Create relationships with users
      * @return BelongsTo
      */
-    public function users(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
