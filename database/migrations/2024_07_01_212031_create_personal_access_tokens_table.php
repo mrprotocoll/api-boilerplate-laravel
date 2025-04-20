@@ -16,9 +16,11 @@ return new class extends Migration
             $table->uuidMorphs('tokenable');
             $table->string('name');
             $table->string('token', 64)->unique();
+            $table->string('refresh_token', 64)->unique();
             $table->text('abilities')->nullable();
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();
+            $table->timestamp('refresh_token_expires_at');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
