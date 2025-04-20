@@ -84,6 +84,7 @@ final class GoogleAuthController extends Controller
             meta: ['accessToken' => $token]
         );
     }
+
     /**
      * Log in with Google authentication.
      *

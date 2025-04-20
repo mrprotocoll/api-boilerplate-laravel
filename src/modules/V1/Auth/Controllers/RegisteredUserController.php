@@ -21,18 +21,9 @@ final class RegisteredUserController extends Controller
      *      description="Registers a new user with the provided information.",
      *
      *      @OA\RequestBody(
-     *          required=true,
-     *
-     *          @OA\MediaType(
-     *              mediaType="application/json",
-     *
-     *              @OA\Schema(
-     *                  @OA\Property(property="name", type="string", description="User's name"),
-     *                  @OA\Property(property="email", type="string", format="email", description="User's email"),
-     *                  @OA\Property(property="password", type="string", format="password", description="User's password"),
-     *              )
-     *          )
-     *      ),
+     *           required=true,
+     *           @OA\JsonContent(ref="#/components/schemas/RegisterRequest")
+     *       ),
      *
      *      @OA\Response(
      *          response=201,
