@@ -109,6 +109,7 @@ composer install
 
 ## Setup
 
+Create your database.
 
 create .env file, change using the .env.example file and update the Database, Google Oauth (optional), and Email credentials.
 ```
