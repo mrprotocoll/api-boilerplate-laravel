@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Modules\V1\Auth\Services;
 
 use Illuminate\Support\Facades\Hash;
-use Shared\Enums\RoleEnum;
+use Modules\V1\Auth\Enums\AuthProviderEnum;
+use Modules\V1\User\Enums\RoleEnum;
 use Modules\V1\User\Models\User;
+use Laravel\Socialite\Two\User as SocialiteUser;
+use Shared\Helpers\GlobalHelper;
+
 
 final class AuthenticationService
 {
-    public static function findOrCreateUser($authUser): User
+    public static function findOrCreateUser(SocialiteUser $authUser): User
     {
         // Check if the user exists in the database
         $user = User::where('email', $authUser->getEmail())->first();
@@ -20,12 +24,11 @@ final class AuthenticationService
             $user = User::create([
                 'name' => $authUser->getName(),
                 'email' => $authUser->getEmail(),
-                'provider_type' => 'google',
+                'provider_type' => AuthProviderEnum::google->name,
                 'provider_id' => $authUser->getId(),
                 'role_id' => RoleEnum::USER->value,
-                'password' => Hash::make('#Password2024'),
+                'password' => Hash::make(GlobalHelper::generateCode(new User())),
                 'oauth' => true,
-                'balance' => env('INITIAL_CREDIT'),
             ]);
         }
 

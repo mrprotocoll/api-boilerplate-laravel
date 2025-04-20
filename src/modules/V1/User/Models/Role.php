@@ -31,13 +31,12 @@ final class Role extends Model
     }
 
     /**
-     * Create relationships with users
+     * Create relationships with user
      * @return BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-
 
 }
