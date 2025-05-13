@@ -13,8 +13,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.15",
         "laravel/tinker": "^2.9",
-        "larowka/prevent-duplicate-requests": "^1.1",
-        "ext-http": "*"
+        "larowka/prevent-duplicate-requests": "^1.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
