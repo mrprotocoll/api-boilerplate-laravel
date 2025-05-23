@@ -6,7 +6,6 @@ namespace Modules\V1\Auth\Controllers;
 
 use App\Http\Controllers\V1\Controller;
 use Exception;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +13,6 @@ use Illuminate\Support\Str;
 use Modules\V1\Auth\Notifications\Welcome;
 use Modules\V1\User\Models\User;
 use Modules\V1\User\Resources\UserResource;
-use Shared\Helpers\GlobalHelper;
 use Shared\Helpers\ResponseHelper;
 
 final class VerifyEmailController extends Controller
@@ -132,7 +130,7 @@ final class VerifyEmailController extends Controller
                 'token' => ['required', 'string'],
             ]);
 
-            $token = GlobalHelper::decrypt($request->token);
+            $token = $request->token;
             // Find the user by the verification token
             $user = User::where('verification_token', $token)->first();
 
@@ -159,17 +157,12 @@ final class VerifyEmailController extends Controller
             $device = Str::limit($request->userAgent(), 255);
             $token = $user->createToken($device)->plainTextToken;
 
-            return response()->json([
-                'message' => 'User verified successfully',
-                'status' => 'success',
-                'statusCode' => '200',
-                'accessToken' => $token,
-                'data' => new UserResource($user),
-            ]);
-        } catch (DecryptException $e) {
-            Log::error('Invalid decryption token: ' . $e);
-
-            return ResponseHelper::error('Invalid verification token', 422); // or throw a custom exception
+            return ResponseHelper::success(
+                data: new UserResource($user),
+                message: 'User verified successfully',
+                status: 201,
+                meta: ['accessToken' => $token]
+            );
         } catch (Exception $exception) {
             Log::error($exception);
 
