@@ -44,9 +44,10 @@ final class FileService
     public function toArray(): array
     {
         return [
+            'name' => $this->name,
             'file_display_name' => $this->name,
             'file_name' => $this->originalName,
-            'file_mime_type' => $this->mime,
+            'mime_type' => $this->mime,
             'file_path' => $this->path,
             'file_size' => $this->size,
             'file_disk' => $this->disk,
