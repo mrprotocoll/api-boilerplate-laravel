@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\V1\Admin\Controllers\Auth\LoginController;
 use Modules\V1\Auth\Controllers\AuthenticatedSessionController;
 use Modules\V1\Auth\Controllers\EmailVerificationNotificationController;
 use Modules\V1\Auth\Controllers\NewPasswordController;
@@ -41,4 +42,10 @@ Route::prefix('auth')->group(function (): void {
     Route::post('/google/login', [GoogleAuthController::class, 'googleOauthLogin']);
 
     Route::post('/refresh-token', [AuthenticatedSessionController::class, 'refreshToken']);
+});
+
+Route::prefix('admin/auth')->group(function (): void {
+    Route::post('login', LoginController::class)
+        ->middleware('guest')
+        ->name('login');
 });

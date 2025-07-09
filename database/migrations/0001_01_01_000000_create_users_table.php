@@ -16,6 +16,8 @@ return new class() extends Migration
         Schema::create('roles', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
             $table->bigInteger('created_at')->useCurrent();
             $table->bigInteger('updated_at')->useCurrent();
         });
