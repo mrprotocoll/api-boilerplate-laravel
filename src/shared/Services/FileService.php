@@ -44,9 +44,10 @@ final class FileService
     public function toArray(): array
     {
         return [
+            'name' => $this->name,
             'file_display_name' => $this->name,
             'file_name' => $this->originalName,
-            'file_mime_type' => $this->mime,
+            'mime_type' => $this->mime,
             'file_path' => $this->path,
             'file_size' => $this->size,
             'file_disk' => $this->disk,
@@ -76,23 +77,27 @@ final class FileService
         try {
             $name = $file->getClientOriginalName();
             $fileName = "{$folderName}/" . self::formatName($name);
-            $disk = 'public';
-            // Store the file in the 'public' disk (storage/app/public)
-            Storage::disk($disk)->put($fileName, file_get_contents($file));
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $filePath = Storage::disk($disk)->put($fileName, file_get_contents($file->getRealPath()));
 
             // Generate SHA-256 hash for the file
-            $fileHash = hash('sha256', file_get_contents($file));
+            $fileHash = hash('sha256', file_get_contents($file->getRealPath()));
 
-            return (new self(
-                name: $name,
-                originalName: $fileName,
-                mime: $file->getClientMimeType(),
-                path: Storage::disk($disk)->url($fileName),
-                disk: $disk,
-                hash: $fileHash,
-                size: $file->getSize(),
-                collection: $folderName
-            ))->toArray();
+            if ($filePath) {
+                // Create and return an OrderDocument instance
+                return (new self(
+                    name: $name,
+                    originalName: $fileName,
+                    mime: $file->getClientMimeType(),
+                    path: Storage::disk($disk)->url($fileName),
+                    disk: $disk,
+                    hash: $fileHash,
+                    size: $file->getSize(),
+                    collection: $folderName
+                ))->toArray();
+            } else {
+                throw new Exception('File upload failed.');
+            }
         } catch (Exception $e) {
             Log::channel('upload_error')->error("upload Failed: \n" . $e->getMessage());
 

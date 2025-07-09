@@ -28,4 +28,9 @@ final class DateTimeHelper
     {
         return $date->toDateTimeString();
     }
+
+    public static function timestamp(): string|int|float
+    {
+        return Carbon::now()->timestamp;
+    }
 }

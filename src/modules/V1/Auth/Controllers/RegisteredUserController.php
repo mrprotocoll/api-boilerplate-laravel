@@ -47,7 +47,8 @@ final class RegisteredUserController extends Controller
     {
         $user = new User();
 
-        $user->name = $request->name;
+        $user->first_name = $request->firstName;
+        $user->last_name = $request->lastName;
         $user->email = $request->email;
         $user->role_id = RoleEnum::USER->value;
         $user->password = Hash::make($request->password);

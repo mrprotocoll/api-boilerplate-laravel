@@ -2,21 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Modules\V1\Auth\Notifications;
+namespace Modules\V1\Admin\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Modules\V1\User\Models\User;
 
-final class VerifyEmailAddress extends Notification
+final class AdminInvite extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public User $user, public string $verificationToken) {}
+    public function __construct(public string $verificationLink) {}
 
     /**
      * Get the notification's delivery channels.
@@ -35,23 +34,10 @@ final class VerifyEmailAddress extends Notification
     {
         return (new MailMessage())
             ->view(
-                'email.auth.verify_email', // The name of the Blade view file
+                'email.auth.reset_password', // The name of the Blade view file
                 [
-                    'name' => $this->user->name,
-                    'token' => $this->verificationToken,
+                    'link' => $this->verificationLink,
                 ]
             );
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-
-        ];
     }
 }

@@ -11,6 +11,7 @@ enum StatusEnum: string
     const APPROVED = 'APPROVED';
 
     const FAILED = 'FAILED';
+    const ACTIVE = 'ACTIVE';
 
     const SUCCESS = 'SUCCESS';
 

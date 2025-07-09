@@ -16,13 +16,18 @@ return new class() extends Migration
         Schema::create('roles', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
             $table->bigInteger('created_at')->useCurrent();
             $table->bigInteger('updated_at')->useCurrent();
         });
 
         Schema::create('users', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->string('name');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('avatar')->nullable();
+            $table->string('phone')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

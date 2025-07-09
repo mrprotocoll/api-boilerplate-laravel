@@ -159,13 +159,10 @@ final class GoogleAuthController extends Controller
         $user = AuthenticationService::findOrCreateUser($authUser);
 
         // Create a new token for the user
-        $device = Str::limit($request->userAgent(), 255);
-        $token = $user->createToken($device)->plainTextToken;
-
         return ResponseHelper::success(
             data: new UserResource($user),
             message: 'Login successful',
-            meta: ['accessToken' => $token]
+            meta: ['accessToken' => AuthenticationService::createToken($user, $request)]
         );
     }
 }
