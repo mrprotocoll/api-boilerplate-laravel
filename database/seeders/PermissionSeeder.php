@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use Modules\V1\User\Models\Permission;
+use Modules\V1\Admin\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
@@ -31,11 +31,6 @@ class PermissionSeeder extends Seeder
             'permission_management' => [
                 'view permissions',
                 'assign permissions',
-            ],
-            'creator_management' => [
-                'view creators',
-                'approve creators',
-                'suspend creators',
             ],
             'content_management' => [
                 'view content',
