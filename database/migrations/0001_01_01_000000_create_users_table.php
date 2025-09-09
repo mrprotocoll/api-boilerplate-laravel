@@ -42,6 +42,7 @@ return new class() extends Migration
             $table->rememberToken();
             $table->bigInteger('created_at')->useCurrent();
             $table->bigInteger('updated_at')->useCurrent();
+            $table->bigInteger('deleted_at')->useCurrent();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {

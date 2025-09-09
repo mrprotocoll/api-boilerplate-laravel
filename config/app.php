@@ -1,5 +1,8 @@
 <?php
 
+use Modules\V1\Logging\Facades\Activity;
+use Modules\V1\Logging\Facades\AppLogger;
+
 return [
 
     /*
@@ -121,6 +124,11 @@ return [
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
+    ],
+
+    'aliases' => [
+        'AppLogger' => AppLogger::class,
+        'Activity' => Activity::class,
     ],
 
 ];

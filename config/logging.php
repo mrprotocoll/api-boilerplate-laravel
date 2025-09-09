@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -73,15 +75,6 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'slack' => [
-            'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
-            'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
-            'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
-            'level' => env('LOG_LEVEL', 'critical'),
-            'replace_placeholders' => true,
-        ],
-
         'papertrail' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -89,9 +82,82 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        // Security events logging
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+            'days' => 90, // Keep security logs longer
+            'replace_placeholders' => true,
+        ],
+
+        // User activity logging
+        'activity' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/activity.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        // Database query logging
+        'database' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/database.log'),
+            'level' => env('DB_LOG_LEVEL', 'debug'),
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
+        // Performance metrics logging
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => 'info',
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
+        // Error-only channel
+        'errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/errors.log'),
+            'level' => 'error',
+            'days' => 60,
+            'replace_placeholders' => true,
+        ],
+
+        // Slack notifications for critical errors (optional)
+        'slack' => [
+            'driver' => 'slack',
+            'url' => env('LOG_SLACK_WEBHOOK_URL'),
+            'username' => env('APP_NAME', 'Laravel'),
+            'emoji' => ':boom:',
+            'level' => env('LOG_SLACK_LEVEL', 'critical'),
+        ],
+
+        // Email notifications for critical errors (optional)
+        'mail' => [
+            'driver' => 'mail',
+            'to' => [
+                'address' => env('LOG_MAIL_TO'),
+                'name' => env('LOG_MAIL_NAME', 'Laravel Log'),
+            ],
+            'subject' => 'Critical Error in ' . env('APP_NAME'),
+            'level' => 'critical',
         ],
 
         'stderr' => [
@@ -102,7 +168,9 @@ return [
             'with' => [
                 'stream' => 'php://stderr',
             ],
-            'processors' => [PsrLogMessageProcessor::class],
+            'processors' => [
+                Monolog\Processor\PsrLogMessageProcessor::class,
+            ],
         ],
 
         'syslog' => [
@@ -127,6 +195,28 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    // Enable automatic database query logging
+    'log_queries' => env('LOG_QUERIES', false),
+
+    // Performance thresholds for automatic warnings
+    'performance_thresholds' => [
+        'response_time' => env('LOG_RESPONSE_TIME_THRESHOLD', 2000), // 2 seconds
+        'memory_usage' => env('LOG_MEMORY_THRESHOLD', 128 * 1024 * 1024), // 128 MB
+        'query_time' => env('LOG_QUERY_TIME_THRESHOLD', 1000), // 1 second
+    ],
+
+    // Context data to include in all logs
+    'default_context' => [
+        'app_version' => env('APP_VERSION', '1.0.0'),
+        'server' => env('SERVER_NAME', gethostname()),
     ],
 
 ];
