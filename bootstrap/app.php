@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\PreventDuplicateRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Larowka\PreventDuplicateRequests\Middleware\PreventDuplicateRequests;
 use Shared\Helpers\ResponseHelper;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\V1\User\Models;
 
-use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\V1\Auth\Notifications\ResetPassword;
 use Modules\V1\Auth\Notifications\VerifyEmailAddress;
-use Shared\Helpers\GlobalHelper;
 use Shared\Services\UserService;
 
 class User extends Authenticatable implements MustVerifyEmail
