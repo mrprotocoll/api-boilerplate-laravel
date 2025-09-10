@@ -7,6 +7,7 @@ namespace Shared\Helpers;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Modules\V1\Logging\Enums\LogChannelEnums;
 
 final class ResponseHelper
 {
@@ -70,14 +71,21 @@ final class ResponseHelper
      *     return MyHelper::error(exception: $e);
      * }
      */
-    public static function error(string $message = 'Oops something went wrong', int $status = 500, ?Exception $exception = null): JsonResponse
+    public static function error(string $message = 'Oops something went wrong', int $status = 500, ?Exception $exception = null, ?array $errors = [], ?LogChannelEnums $channel = null): JsonResponse
     {
-        $exception && Log::error($exception);
+        if ($channel && $exception) {
+            Log::channel($channel->value)->error($exception);
+        } elseif ($exception && ! $channel) {
+            Log::error($exception);
+        }
+
+        if(empty($errors)) $errors[] = $message;
 
         return response()->json([
             'status' => 'error',
             'statusCode' => $status,
             'message' => $message,
+            'errors' => $errors,
         ], $status);
     }
 }

@@ -1,26 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\Auth\Controllers;
 
-use Shared\Helpers\ResponseHelper;
 use App\Http\Controllers\V1\Controller;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Modules\V1\User\Models\User;
+use Shared\Helpers\ResponseHelper;
 
-class EmailVerificationNotificationController extends Controller
+final class EmailVerificationNotificationController extends Controller
 {
     /**
      * @OA\Post(
      *     path="/auth/email/verification-link",
      *     summary="Send email verification notification",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         description="Request body containing user email",
+     *
      *         @OA\JsonContent(
      *             required={"email"},
+     *
      *             @OA\Property(
      *                 property="email",
      *                 type="string",
@@ -29,11 +35,14 @@ class EmailVerificationNotificationController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
+     *
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(
      *                 property="message",
      *                 type="string",
@@ -54,11 +63,14 @@ class EmailVerificationNotificationController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Bad request",
+     *
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(
      *                 property="message",
      *                 type="string",
@@ -67,6 +79,7 @@ class EmailVerificationNotificationController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(response=500, ref="#/components/responses/500"),
      * )
      */
@@ -88,12 +101,11 @@ class EmailVerificationNotificationController extends Controller
             $user->sendEmailVerificationNotification();
 
             return ResponseHelper::success(message: 'Verification link sent successfully to your email');
-        }
-        catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e);
+
             return ResponseHelper::error();
         }
 
     }
-
 }

@@ -9,10 +9,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Modules\V1\Auth\Notifications\Welcome;
+use Modules\V1\Auth\Notifications\WelcomeNotification;
+use Modules\V1\Auth\Services\AuthenticationService;
 use Modules\V1\User\Models\User;
-use Modules\V1\User\Resources\UserResource;
 use Shared\Helpers\ResponseHelper;
 
 final class VerifyEmailController extends Controller
@@ -152,17 +151,10 @@ final class VerifyEmailController extends Controller
             }
 
             // send welcome notification
-            $user->notify(new Welcome($user, config('constants.user_dashboard')));
+            $user->notify(new WelcomeNotification());
 
-            $device = Str::limit($request->userAgent(), 255);
-            $token = $user->createToken($device)->plainTextToken;
+            return AuthenticationService::authLoginResponse($user);
 
-            return ResponseHelper::success(
-                data: new UserResource($user),
-                message: 'User verified successfully',
-                status: 201,
-                meta: ['accessToken' => $token]
-            );
         } catch (Exception $exception) {
             Log::error($exception);
 

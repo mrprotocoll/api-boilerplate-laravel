@@ -39,7 +39,7 @@ Route::prefix('auth')->group(function (): void {
         ->name('logout');
 
     Route::get('/google/url', [GoogleAuthController::class, 'googleAuthUrl']);
-    Route::post('/google/login', [GoogleAuthController::class, 'googleOauthLogin']);
+    Route::post('/google/login', [GoogleAuthController::class, 'googleAuthLogin']);
 
     Route::post('/refresh-token', [AuthenticatedSessionController::class, 'refreshToken']);
 });
