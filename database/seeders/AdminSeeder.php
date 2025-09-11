@@ -5,9 +5,10 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Modules\V1\User\Models\Admin;
+use Modules\V1\Admin\Models\Admin;
 use Shared\Enums\StatusEnum;
 use Shared\Helpers\DateTimeHelper;
+use Shared\Helpers\GlobalHelper;
 
 class AdminSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class AdminSeeder extends Seeder
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
                 'email' => 'admin@gmail.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(GlobalHelper::generateRandomCharacters()),
                 'email_verified_at' => now(),
                 'status' => StatusEnum::ACTIVE,
                 'super_admin' => true,
