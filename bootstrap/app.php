@@ -54,11 +54,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->renderable(function (HttpException $e) {
             if (401 === $e->getStatusCode()) {
-                return ResponseHelper::error($e->getMessage(), 401);
+                return ResponseHelper::unauthorized($e->getMessage());
             } elseif (500 === $e->getStatusCode()) {
-                return ResponseHelper::error();
+                return ResponseHelper::serverError(exception: $e);
             } elseif (403 === $e->getStatusCode()) {
-                return ResponseHelper::error($e->getMessage() ?? 'Forbidden', 403);
+                return ResponseHelper::error(message: $e->getMessage() ?? 'Forbidden', status: 403, exception: $e);
             }
         });
     })->create();
