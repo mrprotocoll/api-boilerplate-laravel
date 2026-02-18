@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Modules\V1\Auth\Requests\LoginRequest;
+use Modules\V1\Auth\Services\AuthenticationService;
 use Modules\V1\User\Models\User;
 use Modules\V1\User\Resources\UserResource;
 use Shared\Helpers\ResponseHelper;
@@ -65,14 +66,8 @@ final class AuthenticatedSessionController extends Controller
             return ResponseHelper::error('Email not verified. Kindly verify your email', 403);
         }
 
-        $device = Str::limit($request->userAgent(), 255);
-        $token = $user->createToken($device)->plainTextToken;
+        return AuthenticationService::authLoginResponse($user);
 
-        return ResponseHelper::success(
-            data: new UserResource($user),
-            message: 'Login successful',
-            meta: ['accessToken' => $token]
-        );
     }
 
     /**

@@ -29,7 +29,7 @@ final class MigrationServiceProvider extends ServiceProvider
     protected function registerBlueprintMacros(): void
     {
         // Macro for standard table setup with UUID primary key and bigint timestamps
-        Blueprint::macro('standardColumns', function () {
+        Blueprint::macro('defaultColumns', function () {
             /** @var Blueprint $this */
             $this->uuid('id')->primary();
             $this->bigInteger('created_at')->useCurrent();

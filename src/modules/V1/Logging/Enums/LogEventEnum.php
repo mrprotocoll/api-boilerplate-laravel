@@ -13,4 +13,5 @@ enum LogEventEnum: string {
     case RESTORE = 'restore';
     case LOGIN = 'login';
     case LOGOUT = 'logout';
+    case LOGIN_FAILED = 'login_failed';
 }

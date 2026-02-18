@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Modules\V1\Auth\Controllers\Oauth;
 
 use App\Http\Controllers\V1\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Modules\V1\Auth\Notifications\WelcomeNotification;
 use Modules\V1\Auth\Services\AuthenticationService;
+use Modules\V1\User\Models\User;
 use Modules\V1\User\Resources\UserResource;
 use Shared\Helpers\ResponseHelper;
 
@@ -68,82 +72,7 @@ final class GoogleAuthController extends Controller
         return ResponseHelper::success(['url' => $url]);
     }
 
-    public function googleOauthLogin(Request $request): \Illuminate\Http\JsonResponse
-    {
-        // Find or create the user in the database
-        $user = Socialite::driver('google')->stateless()->user();
-
-        $user = AuthenticationService::findOrCreateUser($user);
-        // Create a new token for the user
-        $device = Str::limit($request->userAgent(), 255);
-        $token = $user->createToken($device)->plainTextToken;
-
-        return ResponseHelper::success(
-            data: new UserResource($user),
-            message: 'Login successful',
-            meta: ['accessToken' => $token]
-        );
-    }
-
-    /**
-     * Log in with Google authentication.
-     *
-     * @OA\Post(
-     *     path="/auth/google/login",
-     *     summary="Log in with Google authentication",
-     *     tags={"Authentication"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         description="Request body containing authentication code",
-     *         @OA\JsonContent(
-     *             required={"authCode"},
-     *             @OA\Property(
-     *                 property="authCode",
-     *                 type="string",
-     *                 description="Authentication code received from Google"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="Login successful",
-     *                 description="Message indicating successful login"
-     *             ),
-     *             @OA\Property(
-     *                 property="status",
-     *                 type="string",
-     *                 example="success",
-     *                 description="Status of the response"
-     *             ),
-     *             @OA\Property(
-     *                 property="statusCode",
-     *                 type="string",
-     *                 example="200",
-     *                 description="HTTP status code"
-     *             ),
-     *             @OA\Property(
-     *                 property="accessToken",
-     *                 type="string",
-     *                 format="text",
-     *                 description="Access token for the user"
-     *             ),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 description="User resource data",
-     *                 ref="#/components/schemas/UserResource"
-     *             )
-     *         )
-     *     )
-     * )
-     */
-    public function googleAuthLogin(Request $request): \Illuminate\Http\JsonResponse
+    public function googleAuthLogin(Request $request): JsonResponse
     {
         // Validate request input
         $request->validate([
@@ -156,13 +85,40 @@ final class GoogleAuthController extends Controller
         $authUser = Socialite::driver('google')->userFromToken($token['access_token']);
 
         // Find or create the user in the database
-        $user = AuthenticationService::findOrCreateUser($authUser);
+        return $this->findOrCreateTheUserInTheDatabase($authUser, $request);
+    }
+
+    public function findOrCreateTheUserInTheDatabase($authUser, Request $request): JsonResponse
+    {
+        // Check if the user exists in the database
+        $user = User::where('email', $authUser->getEmail())->first();
+
+        if ( ! $user) {
+            $fullName = $authUser->getName();
+            $nameParts = explode(' ', $fullName);
+
+            $firstName = $nameParts[0] ?? '';
+            $lastName = implode(' ', array_slice($nameParts, 1)) ?? '';
+
+            $user = User::create([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $authUser->getEmail(),
+                'provider_type' => 'google',
+                'provider_id' => $authUser->getId(),
+                'password' => Hash::make('Passw0rd100000W@rd'),
+                'oauth' => true,
+            ]);
+
+            $user->markEmailAsVerified();
+            $user->notify(new WelcomeNotification());
+        }
+
+        // Revoke all existing tokens for the user
+        $user->tokens()->delete();
 
         // Create a new token for the user
-        return ResponseHelper::success(
-            data: new UserResource($user),
-            message: 'Login successful',
-            meta: ['accessToken' => AuthenticationService::createToken($user, $request)]
-        );
+        return AuthenticationService::authLoginResponse($user);
+
     }
 }

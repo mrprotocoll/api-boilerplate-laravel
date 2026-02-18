@@ -6,11 +6,12 @@ namespace Modules\V1\Logging\Services;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 use Modules\V1\Logging\Enums\LogEventEnum;
 use Modules\V1\Logging\Enums\LogNameEnum;
+use Modules\V1\Logging\Jobs\LogActivity;
 use Modules\V1\Logging\Model\ActivityLog;
 use Modules\V1\User\Models\User;
 
@@ -31,10 +32,6 @@ final class ActivityLogger
     private array $oldValues = [];
 
     private array $newValues = [];
-
-    public function __construct(
-        private CentralizedLogger $fileLogger
-    ) {}
 
     /**
      * Set the log name for grouping activities.
@@ -146,17 +143,46 @@ final class ActivityLogger
     /**
      * Log the activity to database and file.
      */
-    public function log(string $description): ActivityLog
+    public function log(string $description, bool $async = true): ActivityLog
     {
         // Prepare activity data
-        $activityData = [
+        $activityData = $this->prepareActivityData($description);
+
+        if ($async) {
+            // Dispatch job for async processing
+            dispatch(new LogActivity($activityData));
+
+            // Return a temporary instance (not persisted yet)
+            $activityLog = new ActivityLog($activityData);
+            $activityLog->exists = false;
+        } else {
+            // Synchronous fallback
+            $activityLog = ActivityLog::create($activityData);
+        }
+
+        $this->reset();
+
+        return $activityLog;
+    }
+
+    private function prepareActivityData(string $description): array
+    {
+        // Merge old and new values into properties if they exist
+        if ( ! empty($this->oldValues)) {
+            $this->properties['old'] = $this->oldValues;
+        }
+        if ( ! empty($this->newValues)) {
+            $this->properties['new'] = $this->newValues;
+        }
+
+        return [
             'log_name' => $this->logName,
             'description' => $description,
             'subject_type' => $this->subject?->getMorphClass(),
             'subject_id' => $this->subject?->getKey(),
             'event' => $this->event,
-            'causer_id' => $this->getCauser()?->getKey(),
-            'causer_type' => $this->getCauser()?->getMorphClass(),
+            'user_id' => $this->getCauser()?->getKey(),
+            'school_id' => request()->schoolId(),
             'properties' => $this->properties ?: null,
             'old_values' => $this->oldValues ?: null,
             'new_values' => $this->newValues ?: null,
@@ -166,56 +192,45 @@ final class ActivityLogger
             'session_id' => $this->getSessionId(),
             'request_id' => Request::header('X-Request-ID', uniqid('req_')),
         ];
-
-        // Create database record
-        $activityLog = ActivityLog::create($activityData);
-
-        // Also log to file for debugging
-        $this->logToFile($description, $activityData);
-
-        // Reset state for next use
-        $this->reset();
-
-        return $activityLog;
     }
 
     /**
      * Quick methods for common activities.
      */
-    public function created(Model $model, ?string $description = null): ActivityLog
+    public function created(Model $model, ?string $description = null, bool $async = true): ActivityLog
     {
         return $this->performedOn($model)
             ->event(LogEventEnum::CREATE)
             ->withModelChanges($model)
-            ->log($description ?? ucfirst(class_basename($model)) . ' created');
+            ->log($description ?? ucfirst(class_basename($model)) . ' created', $async);
     }
 
-    public function updated(Model $model, ?string $description = null): ActivityLog
+    public function updated(Model $model, ?string $description = null, bool $async = true): ActivityLog
     {
         return $this->performedOn($model)
             ->event(LogEventEnum::UPDATE)
             ->withModelChanges($model)
-            ->log($description ?? ucfirst(class_basename($model)) . ' updated');
+            ->log($description ?? ucfirst(class_basename($model)) . ' updated', $async);
     }
 
-    public function deleted(Model $model, ?string $description = null): ActivityLog
+    public function deleted(Model $model, ?string $description = null, bool $async = true): ActivityLog
     {
         return $this->performedOn($model)
             ->event(LogEventEnum::DELETE)
             ->withOldValues($model->getOriginal())
-            ->log($description ?? ucfirst(class_basename($model)) . ' deleted');
+            ->log($description ?? ucfirst(class_basename($model)) . ' deleted', $async);
     }
 
-    public function restored(Model $model, ?string $description = null): ActivityLog
+    public function restored(Model $model, ?string $description = null, bool $async = true): ActivityLog
     {
         return $this->performedOn($model)
             ->event(LogEventEnum::RESTORE)
-            ->log($description ?? ucfirst(class_basename($model)) . ' restored');
+            ->log($description ?? ucfirst(class_basename($model)) . ' restored', $async);
     }
 
     public function login(Model $user, array $properties = []): ActivityLog
     {
-        return $this->name('auth')
+        return $this->name(LogNameEnum::AUTH)
             ->causedBy($user)
             ->event(LogEventEnum::LOGIN)
             ->withProperties($properties)
@@ -224,7 +239,7 @@ final class ActivityLogger
 
     public function logout(Model $user, array $properties = []): ActivityLog
     {
-        return $this->log('auth')
+        return $this->name(LogNameEnum::AUTH)
             ->causedBy($user)
             ->event(LogEventEnum::LOGOUT)
             ->withProperties($properties)
@@ -233,8 +248,8 @@ final class ActivityLogger
 
     public function failedLogin(string $email, array $properties = []): ActivityLog
     {
-        return $this->log('auth')
-            ->event('failed_login')
+        return $this->name(LogNameEnum::AUTH)
+            ->event(LogEventEnum::LOGIN_FAILED)
             ->withProperties(array_merge(['email' => $email], $properties))
             ->log('Failed login attempt');
     }
@@ -293,10 +308,10 @@ final class ActivityLogger
         $deletedCount = ActivityLog::where('created_at', '<', now()->subDays($daysToKeep))
             ->delete();
 
-        $this->fileLogger->info('Activity log cleanup completed', [
+        Log::channel('activity')->info('Activity log cleanup completed', [
             'deleted_records' => $deletedCount,
             'days_kept' => $daysToKeep,
-        ], 'activity');
+        ]);
 
         return $deletedCount;
     }
@@ -328,7 +343,7 @@ final class ActivityLogger
      */
     private function logToFile(string $description, array $data): void
     {
-        $this->fileLogger->activity($description, null, [
+        Log::channel('activity')->info($description, [
             'log_name' => $data['log_name'],
             'event' => $data['event'],
             'subject_type' => $data['subject_type'],

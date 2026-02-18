@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\PreventDuplicateRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -47,11 +48,17 @@ return Application::configure(basePath: dirname(__DIR__))
             return ResponseHelper::error(message: 'Duplicate requests', status: 429);
         });
 
+        $exceptions->renderable(function (AuthenticationException $e, Request $request) {
+            return ResponseHelper::error(message: 'Please log into your account', status: 401);
+        });
+
         $exceptions->renderable(function (HttpException $e) {
             if (401 === $e->getStatusCode()) {
-                return ResponseHelper::error('Unauthorized access', 401);
+                return ResponseHelper::unauthorized($e->getMessage());
+            } elseif (500 === $e->getStatusCode()) {
+                return ResponseHelper::serverError(exception: $e);
             } elseif (403 === $e->getStatusCode()) {
-                return ResponseHelper::error('Access denied', 403);
+                return ResponseHelper::error(message: $e->getMessage() ?? 'Forbidden', status: 403, exception: $e);
             }
         });
     })->create();
