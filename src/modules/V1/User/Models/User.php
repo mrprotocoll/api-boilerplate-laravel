@@ -40,7 +40,8 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'role_id',
@@ -77,6 +78,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function active(): ?\Illuminate\Contracts\Auth\Authenticatable
     {
         return Auth::user();
+    }
+
+    public function name(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
     }
 
     public function sendEmailVerificationNotification(): void
