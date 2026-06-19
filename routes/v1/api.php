@@ -16,6 +16,13 @@ Route::middleware(['auth:sanctum'])->prefix('user')->as('user:')->group(
 );
 
 /**
+ * Admin AI Routes
+ */
+Route::middleware(['auth:sanctum'])->prefix('admin')->as('admin:')->group(
+    base_path('routes/v1/admin/ai.php'),
+);
+
+/**
  * Authentication Routes
  */
 Route::as('auth:')->group(

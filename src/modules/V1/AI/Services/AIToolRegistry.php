@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Services;
 
 use Modules\V1\AI\Contracts\AIToolHandler;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIToolDefinition;
 use Modules\V1\AI\DTO\AIToolValidationResult;
 use Modules\V1\AI\Tools\ApplicationInfoTool;
+use Modules\V1\AI\Tools\AuthenticatedAdminTool;
 use Modules\V1\AI\Tools\AuthenticatedUserTool;
 use Modules\V1\AI\Tools\CurrentTimeTool;
 use Modules\V1\AI\Tools\NavigateTool;
@@ -20,49 +22,64 @@ final class AIToolRegistry
     public function __construct(
         CurrentTimeTool $currentTimeTool,
         AuthenticatedUserTool $authenticatedUserTool,
+        AuthenticatedAdminTool $authenticatedAdminTool,
         ApplicationInfoTool $applicationInfoTool,
         NavigateTool $navigateTool,
     ) {
-        foreach ([$currentTimeTool, $authenticatedUserTool, $applicationInfoTool, $navigateTool] as $handler) {
+        foreach ([$currentTimeTool, $authenticatedUserTool, $authenticatedAdminTool, $applicationInfoTool, $navigateTool] as $handler) {
             $this->handlers[$handler->name()] = $handler;
         }
     }
 
-    public function handler(string $name): ?AIToolHandler
+    public function handler(string $name, ?AIActorContext $actor = null): ?AIToolHandler
     {
-        return $this->handlers[$name] ?? null;
+        $handler = $this->handlers[$name] ?? null;
+        if (null === $handler || ! $this->isVisible($handler->definition(), $actor)) {
+            return null;
+        }
+
+        return $handler;
     }
 
     /** @return array<string, AIToolDefinition> */
-    public function definitions(): array
+    public function definitions(?AIActorContext $actor = null): array
     {
         $definitions = [];
         foreach ($this->handlers as $name => $handler) {
-            $definitions[$name] = $handler->definition();
+            $definition = $handler->definition();
+            if ($this->isVisible($definition, $actor)) {
+                $definitions[$name] = $definition;
+            }
         }
 
         return $definitions;
     }
 
     /** @return list<array<string, mixed>> */
-    public function nativeToolDefinitions(): array
+    public function nativeToolDefinitions(?AIActorContext $actor = null): array
     {
         return array_values(array_map(
             static fn (AIToolDefinition $definition): array => $definition->toNativeTool(),
-            $this->definitions(),
+            $this->definitions($actor),
         ));
     }
 
     /** @return list<string> */
-    public function supportedTools(): array
+    public function supportedTools(?AIActorContext $actor = null): array
+    {
+        return array_keys($this->definitions($actor));
+    }
+
+    /** @return list<string> */
+    public function registeredTools(): array
     {
         return array_keys($this->handlers);
     }
 
     /** @param array<string, mixed> $arguments */
-    public function validate(string $name, array $arguments): AIToolValidationResult
+    public function validate(string $name, array $arguments, ?AIActorContext $actor = null): AIToolValidationResult
     {
-        $definition = $this->definitions()[$name] ?? null;
+        $definition = $this->definitions($actor)[$name] ?? null;
         if (null === $definition) {
             return new AIToolValidationResult(false, ['Unsupported tool requested.']);
         }
@@ -100,6 +117,15 @@ final class AIToolRegistry
         }
 
         return new AIToolValidationResult([] === $errors, $errors);
+    }
+
+    public function isVisible(AIToolDefinition $definition, ?AIActorContext $actor): bool
+    {
+        if (null === $actor) {
+            return ! $definition->requiresAuth;
+        }
+
+        return [] === $definition->scopes || in_array($actor->scope, $definition->scopes, true);
     }
 
     private function matchesType(mixed $value, string $type): bool

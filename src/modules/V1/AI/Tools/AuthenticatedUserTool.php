@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Tools;
 
 use Modules\V1\AI\Contracts\AIToolHandler;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIToolDefinition;
 use Modules\V1\AI\DTO\AIToolResult;
 use Modules\V1\User\Models\User;
@@ -22,12 +23,13 @@ final class AuthenticatedUserTool implements AIToolHandler
             name: $this->name(),
             description: 'Get the safe profile fields for the authenticated API user.',
             inputSchema: [],
+            scopes: [AIActorContext::SCOPE_USER],
         );
     }
 
-    public function execute(array $arguments, ?User $user): AIToolResult
+    public function execute(array $arguments, ?AIActorContext $actor): AIToolResult
     {
-        if (null === $user) {
+        if (null === $actor || ! $actor->model instanceof User) {
             return new AIToolResult(
                 status: 'error',
                 kind: 'authenticated_user',
@@ -35,6 +37,8 @@ final class AuthenticatedUserTool implements AIToolHandler
                 display: ['type' => 'notice', 'mode' => 'always'],
             );
         }
+
+        $user = $actor->model;
 
         $data = [
             'id' => (string) $user->id,

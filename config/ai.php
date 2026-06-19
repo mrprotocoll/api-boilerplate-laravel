@@ -49,6 +49,8 @@ return [
         'limits' => [
             'daily_user_message_limit' => env('AI_DAILY_USER_MESSAGE_LIMIT'),
             'daily_user_cost_limit' => env('AI_DAILY_USER_COST_LIMIT'),
+            'daily_admin_message_limit' => env('AI_DAILY_ADMIN_MESSAGE_LIMIT'),
+            'daily_admin_cost_limit' => env('AI_DAILY_ADMIN_COST_LIMIT'),
         ],
 
         'navigation' => [

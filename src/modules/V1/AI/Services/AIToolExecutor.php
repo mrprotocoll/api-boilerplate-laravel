@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Services;
 
 use Modules\V1\AI\DTO\AIToolCall;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIToolResult;
-use Modules\V1\User\Models\User;
 use Throwable;
 
 final class AIToolExecutor
@@ -18,27 +18,27 @@ final class AIToolExecutor
     }
 
     /** @return array{result: AIToolResult, audit: array<string, mixed>} */
-    public function execute(AIToolCall $toolCall, ?User $user): array
+    public function execute(AIToolCall $toolCall, ?AIActorContext $actor): array
     {
         $startedAt = microtime(true);
-        $handler = $this->toolRegistry->handler($toolCall->name);
+        $handler = $this->toolRegistry->handler($toolCall->name, $actor);
         if (null === $handler) {
             return $this->failure($toolCall, $startedAt, 'tool_not_found', 'Unsupported tool requested.');
         }
 
         $definition = $handler->definition();
-        $validation = $this->toolRegistry->validate($toolCall->name, $toolCall->arguments);
+        $validation = $this->toolRegistry->validate($toolCall->name, $toolCall->arguments, $actor);
         if ( ! $validation->valid) {
             return $this->failure($toolCall, $startedAt, 'tool_validation_failed', implode(' ', $validation->errors));
         }
 
-        $authorized = $this->toolAuthorizer->authorize($definition, $user);
+        $authorized = $this->toolAuthorizer->authorize($definition, $actor);
         if ( ! $authorized) {
             return $this->failure($toolCall, $startedAt, 'tool_unauthorized', 'You are not authorized to use this tool.', false);
         }
 
         try {
-            $result = $handler->execute($toolCall->arguments, $user);
+            $result = $handler->execute($toolCall->arguments, $actor);
             $result = $this->boundedResult($result, $definition->maxResultSize, $toolCall);
 
             return [

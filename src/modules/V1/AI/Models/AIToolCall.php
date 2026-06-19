@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\V1\User\Models\User;
 use Shared\Models\BaseModel;
 
 final class AIToolCall extends BaseModel
@@ -19,7 +19,8 @@ final class AIToolCall extends BaseModel
     protected $fillable = [
         'session_id',
         'message_id',
-        'user_id',
+        'actor_type',
+        'actor_id',
         'tool',
         'arguments',
         'status',
@@ -47,8 +48,8 @@ final class AIToolCall extends BaseModel
         return $this->belongsTo(AIMessage::class, 'message_id');
     }
 
-    public function user(): BelongsTo
+    public function actor(): MorphTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 }

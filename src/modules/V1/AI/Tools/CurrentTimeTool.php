@@ -6,9 +6,9 @@ namespace Modules\V1\AI\Tools;
 
 use Illuminate\Support\Carbon;
 use Modules\V1\AI\Contracts\AIToolHandler;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIToolDefinition;
 use Modules\V1\AI\DTO\AIToolResult;
-use Modules\V1\User\Models\User;
 
 final class CurrentTimeTool implements AIToolHandler
 {
@@ -34,7 +34,7 @@ final class CurrentTimeTool implements AIToolHandler
         );
     }
 
-    public function execute(array $arguments, ?User $user): AIToolResult
+    public function execute(array $arguments, ?AIActorContext $actor): AIToolResult
     {
         $timezone = isset($arguments['timezone']) && is_string($arguments['timezone'])
             ? $arguments['timezone']

@@ -12,7 +12,7 @@ return new class () extends Migration {
         Schema::create('ai_messages', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('session_id')->constrained('ai_sessions')->cascadeOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuidMorphs('actor');
             $table->string('role', 20)->index();
             $table->text('content');
             $table->json('attachment')->nullable();
@@ -31,7 +31,7 @@ return new class () extends Migration {
             $table->bigInteger('deleted_at')->nullable()->index();
 
             $table->index(['session_id', 'role']);
-            $table->index(['user_id', 'created_at']);
+            $table->index(['actor_type', 'actor_id', 'created_at']);
         });
     }
 

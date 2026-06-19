@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\V1\AI\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\V1\User\Models\User;
 use Shared\Models\BaseModel;
 
 final class AISession extends BaseModel
@@ -19,7 +18,8 @@ final class AISession extends BaseModel
     /** @var list<string> */
     protected $fillable = [
         'session_token',
-        'user_id',
+        'actor_type',
+        'actor_id',
         'status',
         'source_page',
         'last_activity_at',
@@ -32,9 +32,9 @@ final class AISession extends BaseModel
         'metadata' => 'array',
     ];
 
-    public function user(): BelongsTo
+    public function actor(): MorphTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 
     public function messages(): HasMany

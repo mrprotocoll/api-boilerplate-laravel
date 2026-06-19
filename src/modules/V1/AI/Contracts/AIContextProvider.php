@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\V1\AI\Contracts;
 
-use Modules\V1\User\Models\User;
+use Modules\V1\AI\DTO\AIActorContext;
 
 interface AIContextProvider
 {
@@ -14,5 +14,5 @@ interface AIContextProvider
      * @param array<string, mixed> $input
      * @return array<string, mixed>
      */
-    public function build(?User $user, array $input = []): array;
+    public function build(?AIActorContext $actor, array $input = []): array;
 }

@@ -6,7 +6,7 @@ namespace Modules\V1\Admin\Controllers;
 
 use App\Http\Controllers\V1\Controller;
 
-final class AdminBaseController extends Controller
+abstract class AdminBaseController extends Controller
 {
     protected $admin;
 

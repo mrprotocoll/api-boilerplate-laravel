@@ -12,7 +12,7 @@ return new class () extends Migration {
         Schema::create('ai_sessions', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('session_token', 100)->unique();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->uuidMorphs('actor');
             $table->string('status', 20)->default('active')->index();
             $table->string('source_page')->nullable();
             $table->bigInteger('last_activity_at')->nullable()->index();
@@ -21,7 +21,7 @@ return new class () extends Migration {
             $table->bigInteger('updated_at');
             $table->bigInteger('deleted_at')->nullable()->index();
 
-            $table->index(['user_id', 'status']);
+            $table->index(['actor_type', 'actor_id', 'status']);
         });
     }
 

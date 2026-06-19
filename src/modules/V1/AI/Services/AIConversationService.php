@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\Models\AIMessage;
 use Modules\V1\AI\Models\AISession;
 use Modules\V1\AI\Models\AIToolCall;
-use Modules\V1\User\Models\User;
 
 final class AIConversationService
 {
@@ -25,7 +25,7 @@ final class AIConversationService
     }
 
     /** @param array<string, mixed> $data */
-    public function createOrResumeSession(array $data, User $user): AISession
+    public function createOrResumeSession(array $data, AIActorContext $actor): AISession
     {
         $requestedSessionToken = isset($data['sessionToken']) && is_string($data['sessionToken'])
             ? trim($data['sessionToken'])
@@ -34,7 +34,7 @@ final class AIConversationService
 
         $existingSession = AISession::query()->where('session_token', $sessionToken)->first();
         if ($existingSession instanceof AISession) {
-            if ((string) $existingSession->user_id !== (string) $user->id) {
+            if ((string) $existingSession->actor_type !== $actor->morphClass() || (string) $existingSession->actor_id !== $actor->id()) {
                 throw new ModelNotFoundException('AI session not found.');
             }
 
@@ -53,7 +53,8 @@ final class AIConversationService
 
         return AISession::query()->create([
             'session_token' => $sessionToken,
-            'user_id' => $user->id,
+            'actor_type' => $actor->morphClass(),
+            'actor_id' => $actor->id(),
             'status' => 'active',
             'source_page' => $this->nullableString($data['sourcePage'] ?? null),
             'last_activity_at' => time(),
@@ -61,10 +62,11 @@ final class AIConversationService
         ]);
     }
 
-    public function getLatestSession(User $user): ?AISession
+    public function getLatestSession(AIActorContext $actor): ?AISession
     {
         return AISession::query()
-            ->where('user_id', $user->id)
+            ->where('actor_type', $actor->morphClass())
+            ->where('actor_id', $actor->id())
             ->where('status', 'active')
             ->where('last_activity_at', '>=', time() - self::SESSION_TTL_SECONDS)
             ->has('messages')
@@ -74,12 +76,13 @@ final class AIConversationService
     }
 
     /** @return LengthAwarePaginator<int, AISession> */
-    public function getSessionHistory(User $user, int $perPage = 20): LengthAwarePaginator
+    public function getSessionHistory(AIActorContext $actor, int $perPage = 20): LengthAwarePaginator
     {
         $perPage = max(1, min($perPage, 50));
 
         return AISession::query()
-            ->where('user_id', $user->id)
+            ->where('actor_type', $actor->morphClass())
+            ->where('actor_id', $actor->id())
             ->has('messages')
             ->withCount('messages')
             ->orderByDesc('last_activity_at')
@@ -89,29 +92,35 @@ final class AIConversationService
 
     /**
      * @param array<string, mixed> $data
+     * @param callable(string): void|null $onDelta
+     * @param callable(AIMessage): void|null $onUserMessage
+     * @param callable(string): void|null $onToolStart
+     * @param callable(string, array<string, mixed>): void|null $onToolDone
      * @return array{session: AISession, userMessage: AIMessage, assistantMessage: AIMessage}
      */
     public function sendMessage(
         array $data,
-        User $user,
+        AIActorContext $actor,
         ?callable $onDelta = null,
         ?callable $onUserMessage = null,
         ?callable $onToolStart = null,
         ?callable $onToolDone = null,
     ): array {
-        $usageLimit = $this->usageLimiter->check($user);
+        $usageLimit = $this->usageLimiter->check($actor);
         if ( ! $usageLimit->allowed) {
-            $session = $this->createOrResumeSession($data, $user);
+            $session = $this->createOrResumeSession($data, $actor);
             $userMessage = AIMessage::query()->create([
                 'session_id' => $session->id,
-                'user_id' => $user->id,
+                'actor_type' => $actor->morphClass(),
+                'actor_id' => $actor->id(),
                 'role' => 'user',
                 'content' => (string) ($data['message'] ?? ''),
                 'metadata' => isset($data['metadata']) && is_array($data['metadata']) ? $data['metadata'] : [],
             ]);
             $assistantMessage = AIMessage::query()->create([
                 'session_id' => $session->id,
-                'user_id' => $user->id,
+                'actor_type' => $actor->morphClass(),
+                'actor_id' => $actor->id(),
                 'role' => 'assistant',
                 'content' => $usageLimit->message ?? 'Usage limit reached.',
                 'attachment' => ['type' => 'notice', 'kind' => 'usage_limit'],
@@ -129,8 +138,8 @@ final class AIConversationService
             ];
         }
 
-        $persisted = DB::transaction(function () use ($data, $user): array {
-            $session = $this->createOrResumeSession($data, $user);
+        $persisted = DB::transaction(function () use ($data, $actor): array {
+            $session = $this->createOrResumeSession($data, $actor);
             $session->update([
                 'source_page' => $this->nullableString($data['sourcePage'] ?? $session->source_page),
                 'last_activity_at' => time(),
@@ -147,7 +156,8 @@ final class AIConversationService
 
             $userMessage = AIMessage::query()->create([
                 'session_id' => $session->id,
-                'user_id' => $user->id,
+                'actor_type' => $actor->morphClass(),
+                'actor_id' => $actor->id(),
                 'role' => 'user',
                 'content' => (string) $data['message'],
                 'metadata' => isset($data['metadata']) && is_array($data['metadata']) ? $data['metadata'] : [],
@@ -163,7 +173,7 @@ final class AIConversationService
         $runtimeResult = $this->runtime->run(
             (string) $data['message'],
             $persisted['history'],
-            $user,
+            $actor,
             $data,
             $onDelta,
             $onToolStart,
@@ -172,7 +182,8 @@ final class AIConversationService
 
         $assistantMessage = AIMessage::query()->create([
             'session_id' => $persisted['session']->id,
-            'user_id' => $user->id,
+            'actor_type' => $actor->morphClass(),
+            'actor_id' => $actor->id(),
             'role' => 'assistant',
             'content' => $runtimeResult->reply,
             'attachment' => $runtimeResult->attachment,
@@ -189,7 +200,8 @@ final class AIConversationService
             AIToolCall::query()->create([
                 'session_id' => $persisted['session']->id,
                 'message_id' => $assistantMessage->id,
-                'user_id' => $user->id,
+                'actor_type' => $actor->morphClass(),
+                'actor_id' => $actor->id(),
                 'tool' => (string) ($audit['tool'] ?? 'unknown'),
                 'arguments' => isset($audit['arguments']) && is_array($audit['arguments']) ? $audit['arguments'] : [],
                 'status' => (string) ($audit['status'] ?? 'unknown'),
@@ -208,9 +220,9 @@ final class AIConversationService
     }
 
     /** @return LengthAwarePaginator<int, AIMessage> */
-    public function getMessages(string $sessionToken, User $user, int $perPage = 50): LengthAwarePaginator
+    public function getMessages(string $sessionToken, AIActorContext $actor, int $perPage = 50): LengthAwarePaginator
     {
-        $session = $this->resolveOwnedSession($sessionToken, $user);
+        $session = $this->resolveOwnedSession($sessionToken, $actor);
 
         return AIMessage::query()
             ->where('session_id', $session->id)
@@ -219,11 +231,12 @@ final class AIConversationService
     }
 
     /** @param array<string, mixed> $data */
-    public function flagMessage(string $messageId, array $data, User $user): AIMessage
+    public function flagMessage(string $messageId, array $data, AIActorContext $actor): AIMessage
     {
         $message = AIMessage::query()
             ->where('id', $messageId)
-            ->where('user_id', $user->id)
+            ->where('actor_type', $actor->morphClass())
+            ->where('actor_id', $actor->id())
             ->firstOrFail();
 
         $message->update([
@@ -236,10 +249,10 @@ final class AIConversationService
     }
 
     /** @return array<string, mixed> */
-    public function capabilities(): array
+    public function capabilities(?AIActorContext $actor = null): array
     {
         return [
-            'supportedTools' => $this->toolRegistry->supportedTools(),
+            'supportedTools' => $this->toolRegistry->supportedTools($actor),
             'limits' => [
                 'maxToolSteps' => (int) config('ai.assistant.runtime.max_tool_steps', 3),
                 'maxToolCallsPerRequest' => (int) config('ai.assistant.runtime.max_tool_calls_per_request', 5),
@@ -247,11 +260,12 @@ final class AIConversationService
         ];
     }
 
-    private function resolveOwnedSession(string $sessionToken, User $user): AISession
+    private function resolveOwnedSession(string $sessionToken, AIActorContext $actor): AISession
     {
         return AISession::query()
             ->where('session_token', $sessionToken)
-            ->where('user_id', $user->id)
+            ->where('actor_type', $actor->morphClass())
+            ->where('actor_id', $actor->id())
             ->firstOrFail();
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Context;
 
 use Modules\V1\AI\Contracts\AIContextProvider;
-use Modules\V1\User\Models\User;
+use Modules\V1\AI\DTO\AIActorContext;
 
 final class ApplicationContextProvider implements AIContextProvider
 {
@@ -14,7 +14,7 @@ final class ApplicationContextProvider implements AIContextProvider
         return 'application';
     }
 
-    public function build(?User $user, array $input = []): array
+    public function build(?AIActorContext $actor, array $input = []): array
     {
         return [
             'name' => config('app.name'),

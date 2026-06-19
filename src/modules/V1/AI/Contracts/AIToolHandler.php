@@ -6,7 +6,7 @@ namespace Modules\V1\AI\Contracts;
 
 use Modules\V1\AI\DTO\AIToolDefinition;
 use Modules\V1\AI\DTO\AIToolResult;
-use Modules\V1\User\Models\User;
+use Modules\V1\AI\DTO\AIActorContext;
 
 interface AIToolHandler
 {
@@ -15,5 +15,5 @@ interface AIToolHandler
     public function definition(): AIToolDefinition;
 
     /** @param array<string, mixed> $arguments */
-    public function execute(array $arguments, ?User $user): AIToolResult;
+    public function execute(array $arguments, ?AIActorContext $actor): AIToolResult;
 }

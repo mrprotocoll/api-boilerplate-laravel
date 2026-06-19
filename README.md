@@ -144,6 +144,8 @@ OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
 AI_MAX_TOOL_STEPS=3
 AI_TOOL_RESULT_SYNTHESIS=true
+AI_DAILY_USER_MESSAGE_LIMIT=
+AI_DAILY_ADMIN_MESSAGE_LIMIT=
 ```
 
 Run migrations to create the AI tables:
@@ -152,7 +154,7 @@ Run migrations to create the AI tables:
 php artisan migrate
 ```
 
-Authenticated API endpoints:
+Authenticated user API endpoints:
 
 ```text
 POST   /v1/user/ai/sessions
@@ -163,6 +165,20 @@ POST   /v1/user/ai/messages/stream
 PATCH  /v1/user/ai/messages/{messageId}/flag
 GET    /v1/user/ai/sessions/{sessionToken}/messages
 ```
+
+Authenticated admin API endpoints use the same contract under `/v1/admin/ai/*`:
+
+```text
+POST   /v1/admin/ai/sessions
+GET    /v1/admin/ai/sessions/latest
+GET    /v1/admin/ai/sessions
+POST   /v1/admin/ai/messages
+POST   /v1/admin/ai/messages/stream
+PATCH  /v1/admin/ai/messages/{messageId}/flag
+GET    /v1/admin/ai/sessions/{sessionToken}/messages
+```
+
+AI sessions, messages, and tool-call audit rows are stored against a polymorphic actor, so user conversations are owned by `User` records and internal admin conversations are owned by `Admin` records.
 
 Send a message:
 
@@ -180,10 +196,11 @@ Default read-only tools:
 
 - `current_time`
 - `authenticated_user`
+- `authenticated_admin`
 - `application_info`
 - `navigate`
 
-To add a tool, implement `Modules\V1\AI\Contracts\AIToolHandler`, return an `AIToolDefinition`, and register the handler in `AIToolRegistry`. Keep mutating tools disabled or confirmation-gated by setting `mutatesState` or `requiresConfirmation` on the definition and replacing `AIToolAuthorizer` with your application permission logic.
+To add a tool, implement `Modules\V1\AI\Contracts\AIToolHandler`, return an `AIToolDefinition`, and register the handler in `AIToolRegistry`. Use the definition `scopes` field to expose tools to `user`, `admin`, or both. Keep mutating tools disabled or confirmation-gated by setting `mutatesState` or `requiresConfirmation` on the definition and replacing `AIToolAuthorizer` with your application permission logic.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

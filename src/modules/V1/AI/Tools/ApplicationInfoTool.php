@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\V1\AI\Tools;
 
 use Modules\V1\AI\Contracts\AIToolHandler;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIToolDefinition;
 use Modules\V1\AI\DTO\AIToolResult;
-use Modules\V1\User\Models\User;
 
 final class ApplicationInfoTool implements AIToolHandler
 {
@@ -26,7 +26,7 @@ final class ApplicationInfoTool implements AIToolHandler
         );
     }
 
-    public function execute(array $arguments, ?User $user): AIToolResult
+    public function execute(array $arguments, ?AIActorContext $actor): AIToolResult
     {
         return new AIToolResult(
             status: 'success',

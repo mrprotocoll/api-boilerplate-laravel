@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\V1\AI\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\V1\User\Models\User;
 use Shared\Models\BaseModel;
 
 final class AIMessage extends BaseModel
@@ -19,7 +19,8 @@ final class AIMessage extends BaseModel
     /** @var list<string> */
     protected $fillable = [
         'session_id',
-        'user_id',
+        'actor_type',
+        'actor_id',
         'role',
         'content',
         'attachment',
@@ -52,9 +53,9 @@ final class AIMessage extends BaseModel
         return $this->belongsTo(AISession::class, 'session_id');
     }
 
-    public function user(): BelongsTo
+    public function actor(): MorphTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 
     public function toolCalls(): HasMany

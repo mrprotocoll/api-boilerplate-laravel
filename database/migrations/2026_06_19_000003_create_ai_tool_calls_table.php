@@ -13,7 +13,7 @@ return new class () extends Migration {
             $table->uuid('id')->primary();
             $table->foreignUuid('session_id')->constrained('ai_sessions')->cascadeOnDelete();
             $table->foreignUuid('message_id')->nullable()->constrained('ai_messages')->nullOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuidMorphs('actor');
             $table->string('tool', 100)->index();
             $table->json('arguments')->nullable();
             $table->string('status', 30)->index();
@@ -26,7 +26,7 @@ return new class () extends Migration {
             $table->bigInteger('deleted_at')->nullable()->index();
 
             $table->index(['session_id', 'tool']);
-            $table->index(['user_id', 'created_at']);
+            $table->index(['actor_type', 'actor_id', 'created_at']);
         });
     }
 

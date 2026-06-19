@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-final class BaseModel extends Model
+abstract class BaseModel extends Model
 {
     use HasFactory;
     use HasUuids;

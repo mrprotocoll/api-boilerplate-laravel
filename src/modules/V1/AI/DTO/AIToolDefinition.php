@@ -9,6 +9,7 @@ final readonly class AIToolDefinition
     /**
      * @param array<string, mixed> $inputSchema
      * @param list<string> $abilities
+     * @param list<string> $scopes
      */
     public function __construct(
         public string $name,
@@ -18,6 +19,7 @@ final readonly class AIToolDefinition
         public bool $mutatesState = false,
         public bool $requiresConfirmation = false,
         public array $abilities = [],
+        public array $scopes = ['user', 'admin'],
         public int $maxResultSize = 12000,
     ) {
     }

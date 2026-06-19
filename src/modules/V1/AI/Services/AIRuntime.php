@@ -7,12 +7,12 @@ namespace Modules\V1\AI\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Modules\V1\AI\Contracts\AIServiceInterface;
+use Modules\V1\AI\DTO\AIActorContext;
 use Modules\V1\AI\DTO\AIResponse;
 use Modules\V1\AI\DTO\AIRuntimeResult;
 use Modules\V1\AI\DTO\AIToolCall;
 use Modules\V1\AI\DTO\AIToolResult;
 use Modules\V1\AI\Models\AIMessage;
-use Modules\V1\User\Models\User;
 use Throwable;
 
 final class AIRuntime
@@ -35,7 +35,7 @@ final class AIRuntime
     public function run(
         string $message,
         array $history,
-        ?User $user,
+        ?AIActorContext $actor,
         array $input = [],
         ?callable $onDelta = null,
         ?callable $onToolStart = null,
@@ -43,7 +43,7 @@ final class AIRuntime
     ): AIRuntimeResult {
         $correlationId = (string) Str::uuid();
         $startedAt = microtime(true);
-        $context = $this->contextBuilder->build($user, $input);
+        $context = $this->contextBuilder->build($actor, $input);
         $messages = $this->buildMessages($history, $message, $context);
         $maxSteps = max(0, (int) config('ai.assistant.runtime.max_tool_steps', 3));
         $maxToolCalls = max(1, (int) config('ai.assistant.runtime.max_tool_calls_per_request', 5));
@@ -63,7 +63,7 @@ final class AIRuntime
 
         try {
             for ($step = 0; $step <= $maxSteps; $step++) {
-                $lastResponse = $this->callProvider($aiService, $messages, $providerOptions, $onDelta);
+                $lastResponse = $this->callProvider($aiService, $messages, $providerOptions, $onDelta, $actor);
 
                 if ( ! $lastResponse->hasToolCalls()) {
                     break;
@@ -87,7 +87,7 @@ final class AIRuntime
                         $onToolStart($toolCall->name);
                     }
 
-                    $execution = $this->toolExecutor->execute($toolCall, $user);
+                    $execution = $this->toolExecutor->execute($toolCall, $actor);
                     $toolResult = $execution['result'];
                     $toolAudits[] = $execution['audit'];
                     $toolResults[] = $toolResult->toArray();
@@ -180,9 +180,9 @@ final class AIRuntime
     }
 
     /** @param array<int, array<string, mixed>> $messages */
-    private function callProvider(AIServiceInterface $aiService, array $messages, array $providerOptions, ?callable $onDelta): AIResponse
+    private function callProvider(AIServiceInterface $aiService, array $messages, array $providerOptions, ?callable $onDelta, ?AIActorContext $actor): AIResponse
     {
-        $tools = $aiService->supportsTools() ? $this->toolRegistry->nativeToolDefinitions() : [];
+        $tools = $aiService->supportsTools() ? $this->toolRegistry->nativeToolDefinitions($actor) : [];
 
         if (is_callable($onDelta) && $aiService->supportsStreaming()) {
             return $aiService->streamChatWithTools($messages, $tools, $providerOptions, $onDelta);
