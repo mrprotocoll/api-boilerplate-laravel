@@ -6,14 +6,14 @@ namespace Shared\Enums;
 
 enum StatusEnum: string
 {
-    const PENDING = 'PENDING';
+    public const PENDING = 'PENDING';
 
-    const APPROVED = 'APPROVED';
+    public const APPROVED = 'APPROVED';
 
-    const FAILED = 'FAILED';
-    const ACTIVE = 'ACTIVE';
+    public const FAILED = 'FAILED';
+    public const ACTIVE = 'ACTIVE';
 
-    const SUCCESS = 'SUCCESS';
+    public const SUCCESS = 'SUCCESS';
 
     public static function values(): array
     {

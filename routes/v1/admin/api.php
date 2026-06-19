@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
 use Modules\V1\Admin\Controllers\AdminController;
 use Modules\V1\Admin\Controllers\Auth\LogoutController;
@@ -26,5 +28,3 @@ Route::prefix('logs')->as('logs:')->group(
 Route::as('')->group(
     base_path('routes/v1/admin/admin.php'),
 );
-
-

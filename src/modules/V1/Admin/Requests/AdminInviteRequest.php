@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\Admin\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -19,7 +21,7 @@ use Modules\V1\Admin\Models\Admin;
  *     @OA\Property(property="password", type="string", example="password123"),
  * )
  */
-class AdminInviteRequest extends FormRequest
+final class AdminInviteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -41,7 +43,7 @@ class AdminInviteRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['required', 'exists:roles,id'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.Admin::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . Admin::class],
             'password' => ['required', 'string'],
         ];
     }

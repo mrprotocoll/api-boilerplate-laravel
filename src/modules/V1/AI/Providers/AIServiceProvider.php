@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\V1\AI\Providers;
 
-
 use Illuminate\Support\ServiceProvider;
 use Modules\V1\AI\Contracts\AIServiceInterface;
 
-class AIServiceProvider extends ServiceProvider
+final class AIServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
      */
     public function register(): void
     {
-//        $this->mergeConfigFrom(
-//            __DIR__.'/../../config/ai.php',
-//            'ai'
-//        );
+        $this->mergeConfigFrom(config_path('ai.php'), 'ai');
 
         $this->app->singleton(AIServiceInterface::class, function ($app) {
             return AIFactory::make();
@@ -34,9 +30,6 @@ class AIServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Publish configuration
-        $this->publishes([
-            __DIR__.'/../../config/ai.php' => config_path('ai.php'),
-        ], 'ai-config');
+        // Configuration lives in config/ai.php for this application boilerplate.
     }
 }

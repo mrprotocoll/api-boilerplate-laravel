@@ -8,12 +8,10 @@ use App\Http\Controllers\V1\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Modules\V1\Auth\Notifications\WelcomeNotification;
 use Modules\V1\Auth\Services\AuthenticationService;
 use Modules\V1\User\Models\User;
-use Modules\V1\User\Resources\UserResource;
 use Shared\Helpers\ResponseHelper;
 
 final class GoogleAuthController extends Controller

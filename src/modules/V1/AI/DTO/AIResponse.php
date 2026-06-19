@@ -1,39 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\AI\DTO;
 
-class AIResponse
+final class AIResponse
 {
-    protected string $content;
-    protected array $raw;
-    protected ?array $structured;
-    protected string $provider;
-    protected string $model;
-    protected int $promptTokens;
-    protected int $completionTokens;
-    protected float $cost;
-    protected array $metadata;
-
+    /** @param list<AIToolCall> $toolCalls */
     public function __construct(
-        string $content,
-        array $raw = [],
-        ?array $structured = null,
-        string $provider = '',
-        string $model = '',
-        int $promptTokens = 0,
-        int $completionTokens = 0,
-        float $cost = 0.0,
-        array $metadata = []
+        private string $content,
+        private array $raw = [],
+        private ?array $structured = null,
+        private string $provider = '',
+        private string $model = '',
+        private int $promptTokens = 0,
+        private int $completionTokens = 0,
+        private float $cost = 0.0,
+        private array $metadata = [],
+        private array $toolCalls = [],
     ) {
-        $this->content = $content;
-        $this->raw = $raw;
-        $this->structured = $structured;
-        $this->provider = $provider;
-        $this->model = $model;
-        $this->promptTokens = $promptTokens;
-        $this->completionTokens = $completionTokens;
-        $this->cost = $cost;
-        $this->metadata = $metadata;
     }
 
     public function getContent(): string
@@ -86,6 +71,17 @@ class AIResponse
         return $this->metadata;
     }
 
+    /** @return list<AIToolCall> */
+    public function getToolCalls(): array
+    {
+        return $this->toolCalls;
+    }
+
+    public function hasToolCalls(): bool
+    {
+        return [] !== $this->toolCalls;
+    }
+
     public function toArray(): array
     {
         return [
@@ -100,6 +96,10 @@ class AIResponse
             ],
             'cost' => $this->cost,
             'metadata' => $this->metadata,
+            'toolCalls' => array_map(
+                static fn (AIToolCall $toolCall): array => $toolCall->toArray(),
+                $this->toolCalls,
+            ),
         ];
     }
 }

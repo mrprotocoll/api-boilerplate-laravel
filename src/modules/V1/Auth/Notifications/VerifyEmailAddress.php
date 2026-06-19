@@ -16,7 +16,9 @@ final class VerifyEmailAddress extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(public User $user, public string $verificationToken) {}
+    public function __construct(public User $user, public string $verificationToken)
+    {
+    }
 
     /**
      * Get the notification's delivery channels.
@@ -37,7 +39,7 @@ final class VerifyEmailAddress extends Notification
             ->view(
                 'email.auth.verify_email', // The name of the Blade view file
                 [
-                    'name' => $this->user->name,
+                    'name' => $this->user->name(),
                     'token' => $this->verificationToken,
                 ]
             );

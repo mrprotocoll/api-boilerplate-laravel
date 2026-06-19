@@ -156,7 +156,7 @@ final class ResponseHelper
      */
     public static function notFound(?string $message = null, ?string $resourceName = null): JsonResponse
     {
-        $message = $message ?? ($resourceName ? "$resourceName not found" : 'Resource not found');
+        $message = $message ?? ($resourceName ? "{$resourceName} not found" : 'Resource not found');
 
         return self::error(
             message: $message,
@@ -175,7 +175,7 @@ final class ResponseHelper
      */
     public static function invalidHeader(?string $message = null, ?string $headerName = null): JsonResponse
     {
-        $message = $message ?? ($headerName ? "Invalid $headerName header" : 'Invalid header');
+        $message = $message ?? ($headerName ? "Invalid {$headerName} header" : 'Invalid header');
 
         return self::error(
             message: $message,
@@ -194,7 +194,7 @@ final class ResponseHelper
      */
     public static function missingHeader(string $headerName, ?string $message = null): JsonResponse
     {
-        $message = $message ?? "$headerName header is required";
+        $message = $message ?? "{$headerName} header is required";
 
         return self::error(
             message: $message,

@@ -6,7 +6,6 @@ namespace Modules\V1\Admin\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\V1\User\Enums\RoleEnum;
 use Shared\Helpers\DateTimeHelper;
 use Shared\Helpers\StringHelper;
 
@@ -32,7 +31,7 @@ final class AdminResource extends JsonResource
             'firstName' => StringHelper::toTitleCase($this->first_name),
             'lastName' => StringHelper::toTitleCase($this->last_name),
             'email' => $this->email,
-//            'roles' => $this->role->name,
+            //            'roles' => $this->role->name,
             'status' => $this->status,
             'isSuperAdmin' => $this->super_admin,
             'createdAt' => DateTimeHelper::dateTime($this->created_at),

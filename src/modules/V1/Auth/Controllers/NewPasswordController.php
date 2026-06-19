@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\Auth\Controllers;
 
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -12,12 +14,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Modules\V1\User\Models\User;
+use Exception;
 
-class NewPasswordController extends Controller
+final class NewPasswordController extends Controller
 {
-
     /**
      * Change user password after email verification.
      *
@@ -132,7 +133,7 @@ class NewPasswordController extends Controller
             // Find the user by the verification token
             $user = User::where('verification_token', $token)->first();
 
-            if (!$user) {
+            if ( ! $user) {
                 return ResponseHelper::error('Invalid verification token', 404);
             }
 
@@ -147,10 +148,10 @@ class NewPasswordController extends Controller
 
             return ResponseHelper::success(message: 'Password changed successfully');
 
-        }catch (DecryptException $e) {
+        } catch (DecryptException $e) {
             Log::error('Invalid decryption token: ' . $e->getMessage());
             return ResponseHelper::error('Invalid verification token', 422); // or throw a custom exception
-        }catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e);
             return ResponseHelper::error();
         }

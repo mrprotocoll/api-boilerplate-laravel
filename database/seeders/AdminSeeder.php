@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -10,14 +12,14 @@ use Shared\Enums\StatusEnum;
 use Shared\Helpers\DateTimeHelper;
 use Shared\Helpers\GlobalHelper;
 
-class AdminSeeder extends Seeder
+final class AdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DB::transaction(function () {
+        DB::transaction(function (): void {
             $timestamp = DateTimeHelper::timestamp();
 
             Admin::firstOrCreate([

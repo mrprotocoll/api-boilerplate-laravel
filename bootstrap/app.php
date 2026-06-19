@@ -32,7 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
-        $middleware->append(PreventDuplicateRequests::class);
+        $preventDuplicateRequests = 'Larowka\\PreventDuplicateRequests\\Middleware\\PreventDuplicateRequests';
+        if (class_exists($preventDuplicateRequests)) {
+            $middleware->append($preventDuplicateRequests);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // customize response for 404 error for route and resource

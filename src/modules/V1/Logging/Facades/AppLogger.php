@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\Logging\Facades;
 
 use Illuminate\Support\Facades\Facade;
@@ -27,7 +29,7 @@ use Modules\V1\Logging\Services\CentralizedLogger;
  * @method static CentralizedLogger withContext(array $context)
  * @method static CentralizedLogger channel(string $channel)
  */
-class AppLogger extends Facade
+final class AppLogger extends Facade
 {
     /**
      * Get the registered name of the component.

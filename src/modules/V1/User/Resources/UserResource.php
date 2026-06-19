@@ -31,7 +31,7 @@ use Shared\Helpers\StringHelper;
     {
         return [
             'id' => $this->id,
-            'name' => StringHelper::toTitleCase($this->name),
+            'name' => StringHelper::toTitleCase($this->resource->name()),
             'email' => $this->email,
         ];
     }

@@ -8,7 +8,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Modules\V1\User\Models\User;
 
 final class WelcomeNotification extends Notification implements ShouldQueue
 {
@@ -17,7 +16,9 @@ final class WelcomeNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     /**
      * Get the notification's delivery channels.

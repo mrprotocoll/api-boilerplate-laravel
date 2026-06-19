@@ -13,11 +13,15 @@ use Modules\V1\Logging\Model\ActivityLog;
 
 final class LogActivity implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public function __construct(
         public array $activityData
-    ) {}
+    ) {
+    }
 
     public function handle(): ActivityLog
     {

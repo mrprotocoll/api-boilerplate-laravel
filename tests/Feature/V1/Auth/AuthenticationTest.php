@@ -71,18 +71,18 @@ it('users cannot authenticate with unverified email', function (): void {
     ]);
 });
 
-it('logs out successfully when authenticated', function () {
+it('logs out successfully when authenticated', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('TestDevice')->plainTextToken;
 
-    $response = $this->postJson('/v1/auth/logout', [], ['Authorization' => "Bearer $token"]);
+    $response = $this->postJson('/v1/auth/logout', [], ['Authorization' => "Bearer {$token}"]);
 
     $response->assertStatus(204);
 
     $this->assertCount(0, $user->tokens);
 });
 
-it('returns error when not authenticated', function () {
+it('returns error when not authenticated', function (): void {
     $response = $this->postJson('/v1/auth/logout');
 
     $response->assertStatus(401);

@@ -35,7 +35,8 @@ final class AdminRole extends Model
     }
 
     // create relationship with users
-    public function admins() : BelongsToMany{
+    public function admins(): BelongsToMany
+    {
         return $this->belongsToMany(Admin::class)->withTimestamps();
     }
 
@@ -49,7 +50,8 @@ final class AdminRole extends Model
      * @param RoleEnum $role
      * @return AdminRole
      */
-    public static function get(RoleEnum $role): AdminRole {
+    public static function get(RoleEnum $role): AdminRole
+    {
         return self::where('name', $role->name())->first();
     }
 

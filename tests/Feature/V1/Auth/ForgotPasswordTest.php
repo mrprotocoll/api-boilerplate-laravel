@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -8,13 +10,13 @@ use Modules\V1\User\Models\User;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     $this->route = '/v1/auth/forgot-password';
     $this->seed(RoleSeeder::class);
 });
 
-it('can request a reset password link', function () {
+it('can request a reset password link', function (): void {
     $user = User::factory()->create();
 
     $response = $this->post($this->route, ['email' => $user->email]);
@@ -29,13 +31,13 @@ it('can request a reset password link', function () {
     Notification::assertSentTo(
         [$user],
         ResetPassword::class,
-        function ($notification, $channels) use ($user) {
+        function ($notification, $channels) {
             return in_array('mail', $channels);
         }
     );
 });
 
-it('sends password reset link for valid email', function () {
+it('sends password reset link for valid email', function (): void {
     $user = User::factory()->create();
 
     $response = $this->postJson($this->route, [
@@ -50,7 +52,7 @@ it('sends password reset link for valid email', function () {
     ]);
 });
 
-it('returns error for invalid email', function () {
+it('returns error for invalid email', function (): void {
     $response = $this->postJson($this->route, [
         'email' => 'invalid-email',
     ]);
@@ -59,7 +61,7 @@ it('returns error for invalid email', function () {
     $response->assertJsonValidationErrors(['email']);
 });
 
-it('returns error for non-existent email', function () {
+it('returns error for non-existent email', function (): void {
     $response = $this->postJson($this->route, [
         'email' => 'nonexistent@example.com',
     ]);

@@ -15,5 +15,6 @@ final class AdminGeneralNotification extends Notification implements ShouldQueue
 
     public function __construct(
         protected NotificationTypeEnum $pointsEarned
-    ) {}
+    ) {
+    }
 }
