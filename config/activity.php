@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     // Enable activity logging in console commands
     'log_in_console' => false,

@@ -77,4 +77,6 @@ namespace App\Http\Controllers\V1;
  *     )
  * )
  */
-abstract class Controller {}
+abstract class Controller
+{
+}

@@ -15,7 +15,9 @@ final class AdminInvite extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(public string $verificationLink) {}
+    public function __construct(public string $verificationLink)
+    {
+    }
 
     /**
      * Get the notification's delivery channels.

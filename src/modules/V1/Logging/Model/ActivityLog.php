@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\Logging\Model;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +12,7 @@ use Illuminate\Support\Collection;
 use Modules\V1\User\Models\User;
 use Shared\Models\BaseModel;
 
-class ActivityLog extends BaseModel
+final class ActivityLog extends BaseModel
 {
     protected $fillable = [
         'log_name',
@@ -154,8 +156,8 @@ class ActivityLog extends BaseModel
         }
 
         $descriptions = $changes->map(function ($change, $attribute) {
-            $old = is_null($change['old']) ? 'null' : $change['old'];
-            $new = is_null($change['new']) ? 'null' : $change['new'];
+            $old = null === $change['old'] ? 'null' : $change['old'];
+            $new = null === $change['new'] ? 'null' : $change['new'];
 
             return "{$attribute}: {$old} → {$new}";
         });

@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Modules\V1\Auth\Services;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Modules\V1\Auth\Notifications\Welcome;
 use Modules\V1\User\Models\User;
 use Modules\V1\User\Resources\UserResource;
 use Shared\Helpers\ResponseHelper;
 
 final class AuthenticationService
 {
-
     public static function createToken(User|Authenticatable $user): string
     {
         $expiry = intval(config('sanctum.expiration'));

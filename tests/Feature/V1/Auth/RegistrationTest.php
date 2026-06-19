@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 //test('new users can register', function () {
 //    $response = $this->post('auth/register', [
 //        'name' => 'Test User',
@@ -16,15 +18,15 @@ use Database\Seeders\RoleSeeder;
 use Modules\V1\User\Enums\RoleEnum;
 use Modules\V1\User\Models\User;
 
-test('registers a new user', function () {
+test('registers a new user', function (): void {
 
     $this->seed(RoleSeeder::class);
 
     $userData = [
-        'name' => 'John Doe',
+        'firstName' => 'John',
+        'lastName' => 'Doe',
         'email' => 'john@example.com',
         'password' => 'password',
-        'password_confirmation' => 'password',
     ];
 
     $response = $this->postJson('/v1/auth/register', $userData);
@@ -37,7 +39,8 @@ test('registers a new user', function () {
 
     // Assert the user was created in the database
     $this->assertDatabaseHas('users', [
-        'name' => 'John Doe',
+        'first_name' => 'John',
+        'last_name' => 'Doe',
         'email' => 'john@example.com',
         'role_id' => RoleEnum::USER->value,
     ]);

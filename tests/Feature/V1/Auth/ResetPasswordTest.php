@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Modules\V1\User\Models\User;
+use PHPUnit\Framework\Attributes\Test;
 use Shared\Helpers\GlobalHelper;
 use Tests\TestCase;
 
@@ -28,7 +29,7 @@ final class ResetPasswordTest extends TestCase
         $this->seed(RoleSeeder::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_resets_password_successfully(): void
     {
         // Create a user with a verification token
@@ -61,10 +62,10 @@ final class ResetPasswordTest extends TestCase
         $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
 
         // Assert the verification token is cleared
-//        $this->assertEmpty($user->fresh()->verification_token);
+        //        $this->assertEmpty($user->fresh()->verification_token);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_error_for_invalid_token(): void
     {
         // Send password reset request with an invalid token
@@ -79,7 +80,7 @@ final class ResetPasswordTest extends TestCase
 
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_error_for_expired_token(): void
     {
         // Create a user with an expired verification token
@@ -109,7 +110,7 @@ final class ResetPasswordTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_validation_errors_for_missing_fields(): void
     {
         // Send password reset request with missing fields
@@ -122,7 +123,7 @@ final class ResetPasswordTest extends TestCase
         $response->assertJsonValidationErrors(['token', 'password']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_validation_errors_for_password_mismatch(): void
     {
         // Send password reset request with mismatched password and confirmation

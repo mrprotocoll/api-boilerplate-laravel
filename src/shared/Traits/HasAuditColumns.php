@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shared\Traits;
 
 use Illuminate\Database\Eloquent\Model;
@@ -14,14 +16,14 @@ trait HasAuditColumns
     protected static function bootHasAuditColumns(): void
     {
         // Set created_by on creating
-        static::creating(function (Model $model) {
-            if (auth()->check() && !$model->created_by) {
+        static::creating(function (Model $model): void {
+            if (auth()->check() && ! $model->created_by) {
                 $model->created_by = auth()->id();
             }
         });
 
         // Set updated_by on updating
-        static::updating(function (Model $model) {
+        static::updating(function (Model $model): void {
             if (auth()->check()) {
                 $model->updated_by = auth()->id();
             }
@@ -29,8 +31,8 @@ trait HasAuditColumns
 
         // Set deleted_by on deleting (if soft deletes is used)
         if (method_exists(static::class, 'bootSoftDeletes')) {
-            static::deleting(function (Model $model) {
-                if (auth()->check() && $model->isForceDeleting() === false) {
+            static::deleting(function (Model $model): void {
+                if (auth()->check() && false === $model->isForceDeleting()) {
                     $model->deleted_by = auth()->id();
                     $model->saveQuietly(); // Save without triggering events
                 }

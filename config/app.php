@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Modules\V1\Logging\Facades\Activity;
 use Modules\V1\Logging\Facades\AppLogger;
 

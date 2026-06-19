@@ -14,7 +14,11 @@ use Shared\Services\UserService;
 
 final class Admin extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasUuids, Notifiable, UserService;
+    use HasApiTokens;
+    use HasFactory;
+    use HasUuids;
+    use Notifiable;
+    use UserService;
 
     protected $table = 'system_users';
 
@@ -67,7 +71,7 @@ final class Admin extends Authenticatable implements MustVerifyEmail
         if (is_string($role)) {
             return $this->roles->contains('slug', $role);
         }
-        return !! $role->intersect($this->roles)->count();
+        return ! ! $role->intersect($this->roles)->count();
     }
 
     public function hasPermission($permission)

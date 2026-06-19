@@ -16,7 +16,9 @@ final class ResetPassword extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(public User $user, public string $verificationLink) {}
+    public function __construct(public User $user, public string $verificationLink)
+    {
+    }
 
     /**
      * Get the notification's delivery channels.

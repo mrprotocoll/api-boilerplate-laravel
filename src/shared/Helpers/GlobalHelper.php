@@ -99,11 +99,11 @@ final class GlobalHelper
     {
         $initials = '';
 
-        if (!empty($firstName)) {
+        if ( ! empty($firstName)) {
             $initials .= mb_strtoupper(mb_substr($firstName, 0, 1));
         }
 
-        if (!empty($lastName)) {
+        if ( ! empty($lastName)) {
             $initials .= mb_strtoupper(mb_substr($lastName, 0, 1));
         }
 

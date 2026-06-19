@@ -40,6 +40,7 @@ A robust, modular Laravel 11 API boilerplate built using a Domain-Driven Design 
 - Seeders and Factories: Simplified data seeding with predefined roles. 
 - Rate Limiting: API throttling to prevent abuse. 
 - Fully Documented: Swagger/OpenAPI support for API documentation.
+- AI Agent Infrastructure: Provider adapters, DB-backed chat sessions, tool execution, usage limits, and streaming-ready API endpoints.
 
 ### Architecture Overview
 #### Domain-Driven Design (DDD)
@@ -130,6 +131,59 @@ The following command can be used to run the application.
 ```sh
   php artisan serve
 ```
+
+### AI Agent Infrastructure
+
+The boilerplate includes a ready-to-ship AI assistant module under `src/modules/V1/AI`.
+
+Configure a provider in `.env`:
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+AI_MAX_TOOL_STEPS=3
+AI_TOOL_RESULT_SYNTHESIS=true
+```
+
+Run migrations to create the AI tables:
+
+```sh
+php artisan migrate
+```
+
+Authenticated API endpoints:
+
+```text
+POST   /v1/user/ai/sessions
+GET    /v1/user/ai/sessions/latest
+GET    /v1/user/ai/sessions
+POST   /v1/user/ai/messages
+POST   /v1/user/ai/messages/stream
+PATCH  /v1/user/ai/messages/{messageId}/flag
+GET    /v1/user/ai/sessions/{sessionToken}/messages
+```
+
+Send a message:
+
+```json
+{
+  "sessionToken": "optional-existing-session-token",
+  "sourcePage": "/dashboard",
+  "message": "What time is it and where can I edit my profile?"
+}
+```
+
+The runtime supports native provider tools where available. It uses `AI_MAX_TOOL_STEPS` to prevent runaway loops and `AI_TOOL_RESULT_SYNTHESIS` to convert tool outputs into a final user-facing answer.
+
+Default read-only tools:
+
+- `current_time`
+- `authenticated_user`
+- `application_info`
+- `navigate`
+
+To add a tool, implement `Modules\V1\AI\Contracts\AIToolHandler`, return an `AIToolDefinition`, and register the handler in `AIToolRegistry`. Keep mutating tools disabled or confirmation-gated by setting `mutatesState` or `requiresConfirmation` on the definition and replacing `AIToolAuthorizer` with your application permission logic.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

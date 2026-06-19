@@ -1,23 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\V1\AI\Providers\Anthropic;
 
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Modules\V1\AI\DTO\AIResponse;
 use Modules\V1\AI\Services\BaseAIService;
 
-class AnthropicService extends BaseAIService
+final class AnthropicService extends BaseAIService
 {
     protected string $apiKey;
+
     protected string $baseUrl = 'https://api.anthropic.com/v1';
+
     protected string $version = '2023-06-01';
+
+    protected int $requestTimeout = 120;
 
     public function __construct(array $config = [])
     {
         parent::__construct($config);
-        $this->apiKey = $config['api_key'] ?? config('services.anthropic.key');
-        $this->baseUrl = $config['base_url'] ?? $this->baseUrl;
-        $this->version = $config['version'] ?? $this->version;
+        $this->apiKey = (string) ($config['api_key'] ?? config('services.anthropic.key', ''));
+        $this->baseUrl = (string) ($config['base_url'] ?? $this->baseUrl);
+        $this->version = (string) ($config['version'] ?? $this->version);
+        $this->requestTimeout = (int) ($config['request_timeout'] ?? $this->requestTimeout);
     }
 
     protected function getDefaultModel(): string
@@ -30,148 +38,85 @@ class AnthropicService extends BaseAIService
         return 'anthropic';
     }
 
-    public function complete(string $prompt, array $options = []): AIResponse
+    public function chat(array $messages, array $options = []): AIResponse
     {
-        $response = $this->makeRequest('messages', [
+        $system = collect($messages)->where('role', 'system')->pluck('content')->implode("\n\n");
+        $chatMessages = collect($messages)
+            ->reject(static fn (array $message): bool => ($message['role'] ?? null) === 'system')
+            ->map(static fn (array $message): array => [
+                'role' => ($message['role'] ?? 'user') === 'assistant' ? 'assistant' : 'user',
+                'content' => (string) ($message['content'] ?? ''),
+            ])
+            ->values()
+            ->all();
+
+        $payload = [
             'model' => $options['model'] ?? $this->model,
             'max_tokens' => $options['max_tokens'] ?? $this->maxTokens,
             'temperature' => $options['temperature'] ?? $this->temperature,
-            'messages' => [
-                ['role' => 'user', 'content' => $prompt]
-            ]
-        ]);
+            'messages' => $chatMessages,
+        ];
 
-        $content = $response['content'][0]['text'] ?? '';
-        $promptTokens = $response['usage']['input_tokens'] ?? 0;
-        $completionTokens = $response['usage']['output_tokens'] ?? 0;
-
-        $aiResponse = new AIResponse(
-            content: $content,
-            raw: $response,
-            structured: null,
-            provider: $this->getProvider(),
-            model: $response['model'] ?? $this->model,
-            promptTokens: $promptTokens,
-            completionTokens: $completionTokens,
-            cost: $this->calculateCost($promptTokens, $completionTokens),
-            metadata: $options
-        );
-
-        $this->logRequest($prompt, $options, $aiResponse);
-
-        return $aiResponse;
-    }
-
-    public function structuredOutput(string $prompt, array $schema, array $options = []): AIResponse
-    {
-        // Add instruction to output JSON
-        $enhancedPrompt = $prompt . "\n\nRespond ONLY with valid JSON matching this schema. Do not include any explanation or markdown formatting.";
-
-        $response = $this->makeRequest('messages', [
-            'model' => $options['model'] ?? $this->model,
-            'max_tokens' => $options['max_tokens'] ?? $this->maxTokens,
-            'temperature' => $options['temperature'] ?? $this->temperature,
-            'messages' => [
-                ['role' => 'user', 'content' => $enhancedPrompt]
-            ]
-        ]);
-
-        $content = $response['content'][0]['text'] ?? '';
-        $structured = $this->extractJSON($content);
-        $promptTokens = $response['usage']['input_tokens'] ?? 0;
-        $completionTokens = $response['usage']['output_tokens'] ?? 0;
-
-        $aiResponse = new AIResponse(
-            content: $content,
-            raw: $response,
-            structured: $structured,
-            provider: $this->getProvider(),
-            model: $response['model'] ?? $this->model,
-            promptTokens: $promptTokens,
-            completionTokens: $completionTokens,
-            cost: $this->calculateCost($promptTokens, $completionTokens),
-            metadata: array_merge($options, ['schema' => $schema])
-        );
-
-        $this->logRequest($prompt, $options, $aiResponse);
-
-        return $aiResponse;
-    }
-
-    public function analyzeSentiment(string $text, array $options = []): AIResponse
-    {
-        $prompt = "Analyze the sentiment of the following text and return ONLY a JSON object with 'sentiment' (positive/negative/neutral), 'score' (0-1), and 'confidence' (0-1). No explanation needed:\n\n{$text}";
-
-        return $this->structuredOutput($prompt, [
-            'type' => 'object',
-            'properties' => [
-                'sentiment' => ['type' => 'string'],
-                'score' => ['type' => 'number'],
-                'confidence' => ['type' => 'number']
-            ]
-        ], $options);
-    }
-
-    public function classify(string $text, array $categories, array $options = []): AIResponse
-    {
-        $categoriesList = implode(', ', $categories);
-        $prompt = "Classify the following text into one of these categories: {$categoriesList}\n\nText: {$text}\n\nReturn ONLY a JSON object with 'category' and 'confidence' (0-1). No explanation needed.";
-
-        return $this->structuredOutput($prompt, [
-            'type' => 'object',
-            'properties' => [
-                'category' => ['type' => 'string'],
-                'confidence' => ['type' => 'number']
-            ]
-        ], $options);
-    }
-
-    public function extractEntities(string $text, array $options = []): AIResponse
-    {
-        $prompt = "Extract named entities from the following text. Return ONLY a JSON array of entities with 'text', 'type' (person/organization/location/other), and 'confidence' (0-1). No explanation needed:\n\n{$text}";
-
-        return $this->structuredOutput($prompt, [
-            'type' => 'object',
-            'properties' => [
-                'entities' => [
-                    'type' => 'array',
-                    'items' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'text' => ['type' => 'string'],
-                            'type' => ['type' => 'string'],
-                            'confidence' => ['type' => 'number']
-                        ]
-                    ]
-                ]
-            ]
-        ], $options);
-    }
-
-    protected function makeRequest(string $endpoint, array $data): array
-    {
-        $response = Http::withHeaders([
-            'x-api-key' => $this->apiKey,
-            'anthropic-version' => $this->version,
-            'content-type' => 'application/json',
-        ])->post("{$this->baseUrl}/{$endpoint}", $data);
-
-        if (!$response->successful()) {
-            throw new \Exception("Anthropic API request failed: " . $response->body());
+        if ('' !== $system) {
+            $payload['system'] = $system;
         }
 
-        return $response->json();
+        $response = $this->makeRequest('messages', $payload, $this->timeoutFromOptions($options));
+        $content = $response['content'][0]['text'] ?? '';
+        $promptTokens = (int) ($response['usage']['input_tokens'] ?? 0);
+        $completionTokens = (int) ($response['usage']['output_tokens'] ?? 0);
+
+        $aiResponse = new AIResponse(
+            content: is_string($content) ? $content : '',
+            raw: $response,
+            provider: $this->getProvider(),
+            model: (string) ($response['model'] ?? $this->model),
+            promptTokens: $promptTokens,
+            completionTokens: $completionTokens,
+            cost: $this->calculateCost($promptTokens, $completionTokens),
+            metadata: $options,
+        );
+
+        $this->logRequest(json_encode($messages, JSON_THROW_ON_ERROR), $options, $aiResponse);
+
+        return $aiResponse;
+    }
+
+    protected function makeRequest(string $endpoint, array $data, ?int $timeout = null): array
+    {
+        if ('' === $this->apiKey) {
+            throw new Exception('Anthropic API key is not configured.');
+        }
+
+        $response = Http::timeout($timeout ?? $this->requestTimeout)
+            ->withHeaders([
+                'x-api-key' => $this->apiKey,
+                'anthropic-version' => $this->version,
+                'content-type' => 'application/json',
+            ])
+            ->post("{$this->baseUrl}/{$endpoint}", $data);
+
+        if ( ! $response->successful()) {
+            throw new Exception('Anthropic API request failed: ' . $response->body());
+        }
+
+        $json = $response->json();
+        if ( ! is_array($json)) {
+            throw new Exception('Anthropic API returned an invalid JSON response.');
+        }
+
+        return $json;
     }
 
     protected function calculateCost(int $promptTokens, int $completionTokens): float
     {
-        // Pricing for Claude 3.5 Sonnet (as of 2024)
-        $promptCostPer1M = 3.00;
-        $completionCostPer1M = 15.00;
+        return (($promptTokens / 1_000_000) * 3.00) + (($completionTokens / 1_000_000) * 15.00);
+    }
 
-        $promptCost = ($promptTokens / 1_000_000) * $promptCostPer1M;
-        $completionCost = ($completionTokens / 1_000_000) * $completionCostPer1M;
-
-        return $promptCost + $completionCost;
+    private function timeoutFromOptions(array $options): int
+    {
+        return isset($options['request_timeout']) && is_numeric($options['request_timeout'])
+            ? (int) $options['request_timeout']
+            : $this->requestTimeout;
     }
 }

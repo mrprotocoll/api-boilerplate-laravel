@@ -53,16 +53,16 @@ final class LogoutController extends AdminBaseController
      */
     public function __invoke(Request $request): JsonResponse
     {
-//        if ( ! Auth::guard('admin')->check()) {
-//            return response()->json([
-//                'message' => 'Unauthorized user',
-//                'status' => 'error',
-//                'statusCode' => '402',
-//            ], 402);
-//        }
+        //        if ( ! Auth::guard('admin')->check()) {
+        //            return response()->json([
+        //                'message' => 'Unauthorized user',
+        //                'status' => 'error',
+        //                'statusCode' => '402',
+        //            ], 402);
+        //        }
 
         // Revoke the token that was used to authenticate the current request
-        if($request->user()->currentAccessToken()->delete()){
+        if ($request->user()->currentAccessToken()->delete()) {
             return ResponseHelper::success(message: 'logged out successfully');
         }
 
